@@ -73,7 +73,7 @@ const ProductList = () => {
 	);
 
 	const addProduct = () => {
-		history.push(`/app/apps/ecommerce/add-product`);
+		history.push(`/app/products/add-product`);
 	};
 
 	const viewDetails = (row) => {
