@@ -3,8 +3,8 @@ import PageHeaderAlt from 'components/layout-components/PageHeaderAlt'
 import { Tabs, Form, Button, message } from 'antd';
 import Flex from 'components/shared-components/Flex'
 import GeneralField from './GeneralField'
-import VariationField from './VariationField'
-import ShippingField from './ShippingField'
+// import VariationField from './VariationField'
+// import ShippingField from './ShippingField'
 import ProductListData from "assets/data/product-list.data.json"
 
 const { TabPane } = Tabs;
@@ -106,22 +106,22 @@ const ProductForm = props => {
 						</Flex>
 					</div>
 				</PageHeaderAlt>
-				<div className="container">
-					<Tabs defaultActiveKey="1" style={{ marginTop: 30 }}>
-						<TabPane tab="General" key="1">
-							<GeneralField
-								uploadedImg={uploadedImg}
-								uploadLoading={uploadLoading}
-								handleUploadChange={handleUploadChange}
-							/>
-						</TabPane>
-						<TabPane tab="Variation" key="2">
+				<div className="container" style={{ marginTop: 30 }}>
+					{/* <Tabs defaultActiveKey="1" style={{ marginTop: 30 }}> */}
+					{/* <TabPane tab="General" key="1"> */}
+					<GeneralField
+						uploadedImg={uploadedImg}
+						uploadLoading={uploadLoading}
+						handleUploadChange={handleUploadChange}
+					/>
+					{/* </TabPane> */}
+					{/* <TabPane tab="Variation" key="2">
 							<VariationField />
 						</TabPane>
 						<TabPane tab="Shipping" key="3">
 							<ShippingField />
-						</TabPane>
-					</Tabs>
+						</TabPane> */}
+					{/* </Tabs> */}
 				</div>
 			</Form>
 		</>

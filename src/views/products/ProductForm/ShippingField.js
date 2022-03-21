@@ -13,39 +13,39 @@ const ShippingField = () => {
 					<Form.Item name="width" label="Width">
 						<Input addonAfter={
 							<Form.Item name="widthUnit" noStyle>
-								<Select style={{minWidth: 70}} >
+								<Select style={{ minWidth: 70 }} >
 									{
 										legthUnit.map(unit => <Option key={unit} value={unit}>{unit}</Option>)
 									}
 								</Select>
 							</Form.Item>
-						}/>
+						} />
 					</Form.Item>
 				</Col>
 				<Col xs={24} sm={24} md={12}>
 					<Form.Item name="height" label="Height">
 						<Input addonAfter={
 							<Form.Item name="heightUnit" noStyle>
-								<Select style={{minWidth: 70}} >
+								<Select style={{ minWidth: 70 }} >
 									{
 										legthUnit.map(unit => <Option key={unit} value={unit}>{unit}</Option>)
 									}
 								</Select>
 							</Form.Item>
-						}/>
+						} />
 					</Form.Item>
 				</Col>
 				<Col span={24}>
 					<Form.Item name="weight" label="Weight">
 						<Input addonAfter={
 							<Form.Item name="weightUnit" noStyle>
-								<Select style={{minWidth: 70}} >
+								<Select style={{ minWidth: 70 }} >
 									{
 										weightUnit.map(unit => <Option key={unit} value={unit}>{unit}</Option>)
 									}
 								</Select>
 							</Form.Item>
-						}/>
+						} />
 					</Form.Item>
 				</Col>
 				<Col span={24}>

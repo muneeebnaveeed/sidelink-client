@@ -10,7 +10,7 @@ const VariationField = props => (
 				return (
 					<div className="mt-3">
 						{fields.map((field, index) => (
-							<Row key={field.key} gutter={16}> 
+							<Row key={field.key} gutter={16}>
 								<Col sm={24} md={7}>
 									<Form.Item
 										{...field}
@@ -48,19 +48,19 @@ const VariationField = props => (
 										rules={[{ required: true, message: 'Please enter variant SKU' }]}
 										className="w-100"
 									>
-										<InputNumber className="w-100"/>
+										<InputNumber className="w-100" />
 									</Form.Item>
 								</Col>
 								<Col sm={24} md={2}>
-									<MinusCircleOutlined className="mt-md-4 pt-md-3" onClick={() => { remove(field.name)}} />
+									<MinusCircleOutlined className="mt-md-4 pt-md-3" onClick={() => { remove(field.name) }} />
 								</Col>
 								<Col span={24}>
-									<hr className="mt-2"/>
+									<hr className="mt-2" />
 								</Col>
 							</Row>
 						))}
 						<Form.Item>
-							<Button type="dashed" onClick={() => { add()}} className="w-100">
+							<Button type="dashed" onClick={() => { add() }} className="w-100">
 								<PlusOutlined /> Add field
 							</Button>
 						</Form.Item>
