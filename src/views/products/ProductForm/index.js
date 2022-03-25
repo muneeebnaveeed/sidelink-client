@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react'
-import PageHeaderAlt from 'components/layout-components/PageHeaderAlt'
+import React, { useState, useEffect } from 'react';
+import PageHeaderAlt from 'components/layout-components/PageHeaderAlt';
 import { Tabs, Form, Button, message } from 'antd';
-import Flex from 'components/shared-components/Flex'
-import GeneralField from './GeneralField'
+import Flex from 'components/shared-components/Flex';
+import GeneralField from './GeneralField';
 // import VariationField from './VariationField'
 // import ShippingField from './ShippingField'
-import ProductListData from "assets/data/product-list.data.json"
+import ProductListData from 'assets/data/product-list.data.json';
+import { useMutation } from 'react-query';
+import axios from 'axios';
 
 const { TabPane } = Tabs;
 
@@ -13,71 +15,90 @@ const getBase64 = (img, callback) => {
 	const reader = new FileReader();
 	reader.addEventListener('load', () => callback(reader.result));
 	reader.readAsDataURL(img);
-}
+};
 
-const ADD = 'ADD'
-const EDIT = 'EDIT'
+const ADD = 'ADD';
+const EDIT = 'EDIT';
 
-const ProductForm = props => {
-
-	const { mode = ADD, param } = props
+const ProductForm = (props) => {
+	const { mode = ADD, param } = props;
 
 	const [form] = Form.useForm();
-	const [uploadedImg, setImage] = useState('')
-	const [uploadLoading, setUploadLoading] = useState(false)
-	const [submitLoading, setSubmitLoading] = useState(false)
+	const [uploadedImg, setImage] = useState('');
+	const [uploadLoading, setUploadLoading] = useState(false);
+	const [submitLoading, setSubmitLoading] = useState(false);
 
 	useEffect(() => {
 		if (mode === EDIT) {
-			console.log('is edit')
-			console.log('props', props)
-			const { id } = param
-			const produtId = parseInt(id)
-			const productData = ProductListData.filter(product => product.id === produtId)
-			const product = productData[0]
+			console.log('is edit');
+			console.log('props', props);
+			const { id } = param;
+			const produtId = parseInt(id);
+			const productData = ProductListData.filter((product) => product.id === produtId);
+			const product = productData[0];
 			form.setFieldsValue({
-				comparePrice: 0.00,
-				cost: 0.00,
+				comparePrice: 0.0,
+				cost: 0.0,
 				taxRate: 6,
 				sku: 'There are many variations of passages of Lorem Ipsum available.',
 				category: product.category,
 				name: product.name,
-				price: product.price
+				price: product.price,
 			});
-			setImage(product.image)
+			setImage(product.image);
 		}
 	}, [form, mode, param, props]);
 
-	const handleUploadChange = info => {
+	const handleUploadChange = (info) => {
 		if (info.file.status === 'uploading') {
-			setUploadLoading(true)
+			setUploadLoading(true);
 			return;
 		}
 		if (info.file.status === 'done') {
-			getBase64(info.file.originFileObj, imageUrl => {
-				setImage(imageUrl)
-				setUploadLoading(true)
+			getBase64(info.file.originFileObj, (imageUrl) => {
+				setImage(imageUrl);
+				setUploadLoading(true);
 			});
 		}
 	};
 
+	const addProductMutation = useMutation(
+		(payload) => {
+			return axios.post('http://sidelink-backend.herokuapp.com' + '/products', { payload });
+		},
+		{
+			onSuccess: (response) => {
+				message.success(`Created product to product list`);
+			},
+		},
+		{
+			onError: (response) => {
+				message.error(response?.data?.data || response.message);
+			},
+		}
+	);
+
 	const onFinish = () => {
-		setSubmitLoading(true)
-		form.validateFields().then(values => {
-			setTimeout(() => {
-				setSubmitLoading(false)
-				if (mode === ADD) {
-					message.success(`Created ${values.name} to product list`);
-				}
-				if (mode === EDIT) {
-					message.success(`Product saved`);
-				}
-			}, 1500);
-		}).catch(info => {
-			setSubmitLoading(false)
-			console.log('info', info)
-			message.error('Please enter all required field ');
-		});
+		setSubmitLoading(true);
+		form
+			.validateFields()
+			.then((values) => {
+				setTimeout(() => {
+					setSubmitLoading(false);
+					if (mode === ADD) {
+						console.log({ values });
+						addProductMutation.mutate(values);
+					}
+					if (mode === EDIT) {
+						message.success(`Product saved`);
+					}
+				}, 1500);
+			})
+			.catch((info) => {
+				setSubmitLoading(false);
+				console.log('info', info);
+				message.error('Please enter all required field ');
+			});
 	};
 
 	return (
@@ -90,7 +111,7 @@ const ProductForm = props => {
 				initialValues={{
 					heightUnit: 'cm',
 					widthUnit: 'cm',
-					weightUnit: 'kg'
+					weightUnit: 'kg',
 				}}
 			>
 				<PageHeaderAlt className="border-bottom" overlap>
@@ -99,7 +120,7 @@ const ProductForm = props => {
 							<h2 className="mb-3">{mode === 'ADD' ? 'Add New Product' : `Edit Product`} </h2>
 							<div className="mb-3">
 								<Button className="mr-2">Discard</Button>
-								<Button type="primary" onClick={() => onFinish()} htmlType="submit" loading={submitLoading} >
+								<Button type="primary" onClick={() => onFinish()} htmlType="submit" loading={submitLoading}>
 									{mode === 'ADD' ? 'Add' : `Save`}
 								</Button>
 							</div>
@@ -125,7 +146,7 @@ const ProductForm = props => {
 				</div>
 			</Form>
 		</>
-	)
-}
+	);
+};
 
-export default ProductForm
+export default ProductForm;

@@ -7,6 +7,7 @@ import { Route, Switch } from 'react-router-dom';
 import { ThemeSwitcherProvider } from 'react-css-theme-switcher';
 import { THEME_CONFIG } from './configs/AppConfig';
 import { QueryClientProvider, QueryClient } from 'react-query';
+import 'dotenv/config';
 
 const themes = {
 	dark: `${process.env.PUBLIC_URL}/css/dark-theme.css`,
