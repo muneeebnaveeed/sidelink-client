@@ -44,20 +44,17 @@ const getStockStatus = (stockCount) => {
 
 const categories = ['Cloths', 'Bags', 'Shoes', 'Watches', 'Devices'];
 
-
 const ProductList = () => {
 	let history = useHistory();
 	const [list, setList] = useState([]);
 	const [selectedRows, setSelectedRows] = useState([]);
 	const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 
-	const query = useQuery('products', () => axios.get('https://sidelink-backend.herokuapp.com' + '/products'), {
+	const query = useQuery('products', () => get('/products'), {
 		onSuccess: (data) => {
 			setList(data.docs);
 		},
 	});
-
-
 
 	const dropdownMenu = (row) => (
 		<Menu>
@@ -185,6 +182,8 @@ const ProductList = () => {
 			setList(list);
 		}
 	};
+
+	console.log(list);
 
 	return (
 		<Card>
