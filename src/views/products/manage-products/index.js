@@ -10,6 +10,7 @@ import { useHistory } from 'react-router-dom';
 import utils from 'utils';
 import { useQuery } from 'react-query';
 import { get } from 'utils/server';
+import axios from 'axios';
 
 const { Option } = Select;
 
@@ -43,17 +44,20 @@ const getStockStatus = (stockCount) => {
 
 const categories = ['Cloths', 'Bags', 'Shoes', 'Watches', 'Devices'];
 
+
 const ProductList = () => {
 	let history = useHistory();
 	const [list, setList] = useState([]);
 	const [selectedRows, setSelectedRows] = useState([]);
 	const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 
-	const query = useQuery('products', () => get('/products'), {
+	const query = useQuery('products', () => axios.get('https://sidelink-backend.herokuapp.com' + '/products'), {
 		onSuccess: (data) => {
 			setList(data.docs);
 		},
 	});
+
+
 
 	const dropdownMenu = (row) => (
 		<Menu>

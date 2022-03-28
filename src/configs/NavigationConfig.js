@@ -248,10 +248,27 @@ const dashBoardNavTree = [
 						path: `${APP_PREFIX_PATH}/products/add-product`,
 						title: 'Add Products',
 						icon: '',
-						breadcrumb: true,
+						breadcrumb: false,
 						submenu: [],
 					},
 
+					{
+						key: 'edit-product',
+						path: `${APP_PREFIX_PATH}/products/edit-product/12`,
+						title: 'Edit Products',
+						icon: '',
+						breadcrumb: false,
+						submenu: [],
+					},
+
+					{
+						key: 'orders',
+						path: `${APP_PREFIX_PATH}/products/orders`,
+						title: 'Orders',
+						icon: '',
+						breadcrumb: false,
+						submenu: [],
+					},
 
 
 				],

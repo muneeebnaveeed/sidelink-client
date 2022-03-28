@@ -68,26 +68,31 @@ const tags = ['Cotton', 'Nike', 'Sales', 'Sports', 'Outdoor', 'Toys', 'Hobbies']
 const GeneralField = (props) => (
 	<Row gutter={16}>
 		<Col xs={24} sm={24} md={17}>
-			{/* <Card title=""> */}
-			<Form.Item name="name" label="Product name" rules={rules.name} style={{ marginTop: '60px' }}>
-				<Input placeholder="Product Name" />
-			</Form.Item>
-			<Form.Item name="sku" label="SKU" rules={rules.sku}>
-				<Input placeholder="SKU" />
-			</Form.Item>
-			{/* </Card> */}
-			{/* <Card title="Pricing"> */}
-			<Row gutter={16}>
-				<Col xs={24} sm={24} md={12}>
-					<Form.Item name="price" label="Price" rules={rules.price}>
-						<InputNumber
-							className="w-100"
-							formatter={(value) => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-							parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-						/>
-					</Form.Item>
-				</Col>
-				{/* <Col xs={24} sm={24} md={12}>
+			<Card title="Basic Info">
+				<Form.Item name="name" label="Product name" rules={rules.name} >
+					<Input placeholder="Product Name" />
+				</Form.Item>
+
+				<Form.Item name="sku" label="SKU" rules={rules.sku}>
+					<Input placeholder="SKU" />
+				</Form.Item>
+				{/* </Card> */}
+
+				{/* <Card title="Pricing"> */}
+				<Row gutter={16}>
+					<Col xs={24} sm={24} md={30}>
+						<Form.Item name="price" label="Price" rules={rules.price}>
+
+							<InputNumber
+								className="w-100"
+								formatter={(value) => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+								parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+							/>
+						</Form.Item>
+
+					</Col>
+
+					{/* <Col xs={24} sm={24} md={12}>
 						<Form.Item name="comparePrice" label="Compare price" rules={rules.comparePrice}>
 							<InputNumber
 								className="w-100"
@@ -97,7 +102,7 @@ const GeneralField = (props) => (
 							/>
 						</Form.Item>
 					</Col> */}
-				{/* <Col xs={24} sm={24} md={12}>
+					{/* <Col xs={24} sm={24} md={12}>
 						<Form.Item name="cost" label="Cost per item" rules={rules.cost}>
 							<InputNumber
 								className="w-100"
@@ -106,7 +111,7 @@ const GeneralField = (props) => (
 							/>
 						</Form.Item>
 					</Col> */}
-				{/* <Col xs={24} sm={24} md={12}>
+					{/* <Col xs={24} sm={24} md={12}>
 						<Form.Item name="taxRate" label="Tax rate" rules={rules.taxRate}>
 							<InputNumber
 								className="w-100"
@@ -117,11 +122,12 @@ const GeneralField = (props) => (
 							/>
 						</Form.Item>
 					</Col> */}
-			</Row>
-			{/* </Card> */}
+
+				</Row>
+			</Card>
 		</Col>
-		<Col xs={24} sm={24} md={7}>
-			{/* <Card title="Media">
+		{/* <Col xs={24} sm={24} md={7}> */}
+		{/* <Card title="Media">
 				<Dragger {...imageUploadProps} beforeUpload={beforeUpload} onChange={e => props.handleUploadChange(e)}>
 					{
 						props.uploadedImg ?
@@ -144,7 +150,7 @@ const GeneralField = (props) => (
 					}
 				</Dragger>
 			</Card> */}
-			{/* <Card title="Organization">
+		{/* <Card title="Organization">
 				<Form.Item name="category" label="Category" >
 					<Select className="w-100" placeholder="Category">
 						{
@@ -160,7 +166,7 @@ const GeneralField = (props) => (
 					</Select>
 				</Form.Item>
 			</Card> */}
-		</Col>
+		{/* </Col> */}
 	</Row>
 );
 
