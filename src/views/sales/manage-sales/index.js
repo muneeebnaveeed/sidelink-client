@@ -211,7 +211,7 @@ const ProductList = () => {
 				</Flex>
 				<div>
 					<Button onClick={addProduct} type="primary" icon={<PlusCircleOutlined />} block>
-						Add supplier
+						Add Sales
 					</Button>
 				</div>
 			</Flex>

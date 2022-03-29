@@ -296,7 +296,39 @@ const dashBoardNavTree = [
 						path: `${APP_PREFIX_PATH}/supplier/manage-supplier`,
 						title: 'Manage Supplier',
 						icon: '',
+						breadcrumb: true,
+						submenu: [],
+					},
+
+
+
+				],
+			},
+
+
+
+			{
+				key: 'sales',
+				path: `${APP_PREFIX_PATH}/sales`,
+				title: 'Sales',
+				icon: ShoppingCartOutlined,
+				breadcrumb: true,
+				submenu: [
+					{
+						key: 'add-sales',
+						path: `${APP_PREFIX_PATH}/sales/add-sales`,
+						title: 'Add Sales',
+						icon: '',
 						breadcrumb: false,
+						submenu: [],
+					},
+
+					{
+						key: 'manage-sales',
+						path: `${APP_PREFIX_PATH}/sales/manage-sales`,
+						title: 'Manage Sales',
+						icon: '',
+						breadcrumb: true,
 						submenu: [],
 					},
 

@@ -117,7 +117,7 @@ const ProductForm = (props) => {
 				<PageHeaderAlt className="border-bottom" overlap>
 					<div className="container">
 						<Flex className="py-2" mobileFlex={false} justifyContent="between" alignItems="center">
-							<h2 className="mb-3">{mode === 'ADD' ? 'Add New Supplier' : `Edit Product`} </h2>
+							<h2 className="mb-3">{mode === 'ADD' ? 'Add New Sales' : `Edit Product`} </h2>
 							<div className="mb-3">
 								<Button className="mr-2">Discard</Button>
 								<Button type="primary" onClick={() => onFinish()} htmlType="submit" loading={submitLoading}>
