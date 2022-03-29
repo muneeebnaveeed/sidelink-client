@@ -270,12 +270,48 @@ const dashBoardNavTree = [
 						submenu: [],
 					},
 
+				],
+
+			},
+
+
+			{
+				key: 'supplier',
+				path: `${APP_PREFIX_PATH}/supplier`,
+				title: 'Supplier',
+				icon: ShoppingCartOutlined,
+				breadcrumb: true,
+				submenu: [
+					{
+						key: 'add-supplier',
+						path: `${APP_PREFIX_PATH}/supplier/add-supplier`,
+						title: 'Add Supplier',
+						icon: '',
+						breadcrumb: false,
+						submenu: [],
+					},
+
+					{
+						key: 'manage-supplier',
+						path: `${APP_PREFIX_PATH}/supplier/manage-supplier`,
+						title: 'Manage Supplier',
+						icon: '',
+						breadcrumb: false,
+						submenu: [],
+					},
 
 				],
 			},
+
 		],
 	},
 ];
+
+
+
+
+
+
 
 const appsNavTree = [
 	{
