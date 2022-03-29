@@ -1,4 +1,7 @@
 import {
+	LaptopOutlined,
+	SnippetsOutlined,
+	PicLeftOutlined,
 	DashboardOutlined,
 	AppstoreOutlined,
 	FileTextOutlined,
@@ -279,7 +282,7 @@ const dashBoardNavTree = [
 				key: 'supplier',
 				path: `${APP_PREFIX_PATH}/supplier`,
 				title: 'Supplier',
-				icon: ShoppingCartOutlined,
+				icon: SnippetsOutlined,
 				breadcrumb: true,
 				submenu: [
 					{
@@ -311,7 +314,7 @@ const dashBoardNavTree = [
 				key: 'sales',
 				path: `${APP_PREFIX_PATH}/sales`,
 				title: 'Sales',
-				icon: ShoppingCartOutlined,
+				icon: LaptopOutlined,
 				breadcrumb: true,
 				submenu: [
 					{
@@ -339,7 +342,7 @@ const dashBoardNavTree = [
 				key: 'customer',
 				path: `${APP_PREFIX_PATH}/customer`,
 				title: 'Customer',
-				icon: ShoppingCartOutlined,
+				icon: PicLeftOutlined,
 				breadcrumb: true,
 				submenu: [
 					{
