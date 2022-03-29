@@ -332,8 +332,42 @@ const dashBoardNavTree = [
 						submenu: [],
 					},
 
+
 				],
 			},
+			{
+				key: 'customer',
+				path: `${APP_PREFIX_PATH}/customer`,
+				title: 'Customer',
+				icon: ShoppingCartOutlined,
+				breadcrumb: true,
+				submenu: [
+					{
+						key: 'add-customer',
+						path: `${APP_PREFIX_PATH}/customer/add-customer`,
+						title: 'Add Customer',
+						icon: '',
+						breadcrumb: false,
+						submenu: [],
+					},
+
+					{
+						key: 'manage-customer',
+						path: `${APP_PREFIX_PATH}/customer/manage-customer`,
+						title: 'Manage Customer',
+						icon: '',
+						breadcrumb: true,
+						submenu: [],
+					},
+
+
+				],
+			},
+
+
+
+
+
 
 		],
 	},
