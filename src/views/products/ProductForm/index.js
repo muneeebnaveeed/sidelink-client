@@ -8,6 +8,7 @@ import GeneralField from './GeneralField';
 import ProductListData from 'assets/data/product-list.data.json';
 import { useMutation } from 'react-query';
 import axios from 'axios';
+import { post } from 'utils/server';
 
 const { TabPane } = Tabs;
 
@@ -64,7 +65,7 @@ const ProductForm = (props) => {
 
 	const addProductMutation = useMutation(
 		(payload) => {
-			return axios.post('http://sidelink-backend.herokuapp.com' + '/products', { payload });
+			return post('/products', payload);
 		},
 		{
 			onSuccess: (response) => {
