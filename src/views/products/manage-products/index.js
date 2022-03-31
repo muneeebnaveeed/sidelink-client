@@ -49,9 +49,13 @@ const ProductList = () => {
 	const [list, setList] = useState([]);
 	const [selectedRows, setSelectedRows] = useState([]);
 	const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+	const [limit, setLimit] = useState(2);
+	const [page, setPage] = useState(1);
 
-	const query = useQuery('products', () => get('/products'), {
+	const query = useQuery(['products', page], () => get('/products', { params: { page, limit } }), {
 		onSuccess: (data) => {
+			console.log('response');
+			console.log(data.totalPages);
 			setList(data.docs);
 		},
 	});
@@ -217,8 +221,18 @@ const ProductList = () => {
 			</Flex>
 			<div className="table-responsive">
 				<Table
+					loading={query.isLoading}
 					columns={tableColumns}
 					dataSource={list}
+					pagination={{
+						current: query?.data?.pagingCounter || 1,
+						pageSize: limit,
+						total: query?.data?.totalPages || 1,
+						onChange: (page, pageSize) => {
+							setPage(page);
+							setLimit(pageSize);
+						},
+					}}
 					rowKey="id"
 					rowSelection={{
 						selectedRowKeys: selectedRowKeys,
