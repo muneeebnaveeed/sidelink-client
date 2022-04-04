@@ -69,18 +69,24 @@ const GeneralField = (props) => (
 	<Row gutter={16}>
 		<Col xs={24} sm={24} md={17}>
 			<Card title="Basic Info">
-				<Form.Item name="name" label="Product name" rules={rules.name} >
-					<Input placeholder="Product Name" />
+				<Form.Item name="name" label="Supplier name" rules={rules.name} >
+					<Input placeholder="Supplier Name" />
 				</Form.Item>
 
-				<Form.Item name="sku" label="SKU" rules={rules.sku}>
+				{/* <Form.Item name="sku" label="SKU" rules={rules.sku}>
 					<Input placeholder="SKU" />
+				</Form.Item> */}
+
+
+				<Form.Item name="phoneno" label="PhoneNumber" rules={rules.phone}>
+					<Input placeholder="PhoneNumber" />
 				</Form.Item>
 				{/* </Card> */}
 
 				{/* <Card title="Pricing"> */}
+
 				<Row gutter={16}>
-					<Col xs={24} sm={24} md={30}>
+					{/* <Col xs={24} sm={24} md={30}>
 						<Form.Item name="price" label="Price" rules={rules.price}>
 
 							<InputNumber
@@ -90,7 +96,7 @@ const GeneralField = (props) => (
 							/>
 						</Form.Item>
 
-					</Col>
+					</Col> */}
 
 					{/* <Col xs={24} sm={24} md={12}>
 						<Form.Item name="comparePrice" label="Compare price" rules={rules.comparePrice}>

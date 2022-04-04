@@ -78,11 +78,11 @@ const ProductList = () => {
 	);
 
 	const addProduct = () => {
-		history.push(`/app/products/add-product`);
+		history.push(`/views/products/add-product`);
 	};
 
 	const viewDetails = (row) => {
-		history.push(`/app/apps/ecommerce/edit-product/${row.id}`);
+		history.push(`/views/app-views/products/edit-product/${row.id}`);
 	};
 
 	const deleteRow = (row) => {
@@ -151,15 +151,15 @@ const ProductList = () => {
 		// 	render: (stock) => <Flex alignItems="center">{getStockStatus(stock)}</Flex>,
 		// 	sorter: (a, b) => utils.antdTableSorter(a, b, 'stock'),
 		// },
-		// {
-		// 	title: '',
-		// 	dataIndex: 'actions',
-		// 	render: (_, elm) => (
-		// 		<div className="text-right">
-		// 			<EllipsisDropdown menu={dropdownMenu(elm)} />
-		// 		</div>
-		// 	),
-		// },
+		{
+			title: '',
+			dataIndex: 'actions',
+			render: (_, elm) => (
+				<div className="text-right">
+					<EllipsisDropdown menu={dropdownMenu(elm)} />
+				</div>
+			),
+		},
 	];
 
 	const rowSelection = {
@@ -223,9 +223,9 @@ const ProductList = () => {
 				<Table
 					loading={query.isLoading}
 					columns={tableColumns}
-					dataSource={list}
+					dataSource={query?.data?.docs}
 					pagination={{
-						current: query?.data?.pagingCounter || 1,
+						// current: query?.data?.pagingCounter || 1,
 						pageSize: limit,
 						total: query?.data?.totalPages || 1,
 						onChange: (page, pageSize) => {
