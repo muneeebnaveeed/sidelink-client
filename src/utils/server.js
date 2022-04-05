@@ -12,3 +12,6 @@ export const post = async (path, payload, { params, headers } = { params: {}, he
 
 export const patch = async (path, payload, { params, headers } = { params: {}, headers: {} }) =>
 	api.patch(path, payload, { params, headers }).then((res) => res.data);
+
+export const del = async (path, payload, { params, headers } = { params: {}, headers: {} }) =>
+	api.delete(path, payload, { params, headers }).then((res) => res.data);

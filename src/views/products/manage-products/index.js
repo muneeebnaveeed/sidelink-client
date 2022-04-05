@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, Table, Select, Input, Button, Badge, Menu } from 'antd';
+import { Card, Table, Select, Input, Button, Badge, Menu, message } from 'antd';
 import ProductListData from 'assets/data/product-list.data.json';
 import { EyeOutlined, EditOutlined, DeleteOutlined, SearchOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import AvatarStatus from 'components/shared-components/AvatarStatus';
@@ -8,8 +8,8 @@ import Flex from 'components/shared-components/Flex';
 import NumberFormat from 'react-number-format';
 import { useHistory } from 'react-router-dom';
 import utils from 'utils';
-import { useQuery } from 'react-query';
-import { get } from 'utils/server';
+import { useMutation, useQuery } from 'react-query';
+import { del, get } from 'utils/server';
 import axios from 'axios';
 
 const { Option } = Select;
@@ -95,20 +95,38 @@ const ProductList = () => {
 			state: { price: row?.price, name: row?.name, sku: row?.sku },
 		});
 	};
-
-	const deleteRow = (row) => {
-		const objKey = 'id';
-		let data = list;
-		if (selectedRows.length > 1) {
-			selectedRows.forEach((elm) => {
-				data = utils.deleteArrayRow(data, objKey, elm.id);
-				setList(data);
-				setSelectedRows([]);
-			});
-		} else {
-			data = utils.deleteArrayRow(data, objKey, row.id);
-			setList(data);
+	const deleteProductMutation = useMutation(
+		(payload) => {
+			return del(`/products/id/${payload}`);
+		},
+		{
+			onSuccess: (response) => {
+				message.success(`Product deleted`);
+			},
+		},
+		{
+			onError: (response) => {
+				message.error(response?.data?.data || response.message);
+			},
 		}
+	);
+	const deleteRow = (row) => {
+		deleteProductMutation.mutate(row._id);
+		if (deleteProductMutation.isSuccess) {
+			setList((prev) => prev.filter((doc) => doc._id !== row._id));
+		}
+		// const objKey = 'id';
+		// let data = list;
+		// if (selectedRows.length > 1) {
+		// 	selectedRows.forEach((elm) => {
+		// 		data = utils.deleteArrayRow(data, objKey, elm.id);
+		// 		setList(data);
+		// 		setSelectedRows([]);
+		// 	});
+		// } else {
+		// 	data = utils.deleteArrayRow(data, objKey, row.id);
+		// 	setList(data);
+		// }
 	};
 
 	const tableColumns = [
@@ -234,9 +252,9 @@ const ProductList = () => {
 				<Table
 					loading={query.isLoading}
 					columns={tableColumns}
-					dataSource={list}
+					dataSource={query?.data?.docs}
 					pagination={{
-						current: query?.data?.pagingCounter || 1,
+						// current: query?.data?.pagingCounter || 1,
 						pageSize: limit,
 						total: query?.data?.totalPages || 1,
 						onChange: (page, pageSize) => {

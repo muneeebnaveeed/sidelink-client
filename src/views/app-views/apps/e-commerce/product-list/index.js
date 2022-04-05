@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React, { useState } from 'react'
 import { Card, Table, Select, Input, Button, Badge, Menu } from 'antd';
 import ProductListData from "assets/data/product-list.data.json"
 import { EyeOutlined, DeleteOutlined, SearchOutlined, PlusCircleOutlined } from '@ant-design/icons';
@@ -12,13 +12,13 @@ import utils from 'utils'
 const { Option } = Select
 
 const getStockStatus = stockCount => {
-	if(stockCount >= 10) {
+	if (stockCount >= 10) {
 		return <><Badge status="success" /><span>In Stock</span></>
 	}
-	if(stockCount < 10 && stockCount > 0) {
+	if (stockCount < 10 && stockCount > 0) {
 		return <><Badge status="warning" /><span>Limited Stock</span></>
 	}
-	if(stockCount === 0) {
+	if (stockCount === 0) {
 		return <><Badge status="error" /><span>Out of Stock</span></>
 	}
 	return null
@@ -48,19 +48,19 @@ const ProductList = () => {
 			</Menu.Item>
 		</Menu>
 	);
-	
+
 	const addProduct = () => {
 		history.push(`/app/apps/ecommerce/add-product`)
 	}
-	
+
 	const viewDetails = row => {
 		history.push(`/app/apps/ecommerce/edit-product/${row.id}`)
 	}
-	
+
 	const deleteRow = row => {
 		const objKey = 'id'
 		let data = list
-		if(selectedRows.length > 1) {
+		if (selectedRows.length > 1) {
 			selectedRows.forEach(elm => {
 				data = utils.deleteArrayRow(data, objKey, elm.id)
 				setList(data)
@@ -82,7 +82,7 @@ const ProductList = () => {
 			dataIndex: 'name',
 			render: (_, record) => (
 				<div className="d-flex">
-					<AvatarStatus size={60} type="square" src={record.image} name={record.name}/>
+					<AvatarStatus size={60} type="square" src={record.image} name={record.name} />
 				</div>
 			),
 			sorter: (a, b) => utils.antdTableSorter(a, b, 'name')
@@ -98,10 +98,10 @@ const ProductList = () => {
 			render: price => (
 				<div>
 					<NumberFormat
-						displayType={'text'} 
-						value={(Math.round(price * 100) / 100).toFixed(2)} 
-						prefix={'$'} 
-						thousandSeparator={true} 
+						displayType={'text'}
+						value={(Math.round(price * 100) / 100).toFixed(2)}
+						prefix={'$'}
+						thousandSeparator={true}
 					/>
 				</div>
 			),
@@ -125,12 +125,12 @@ const ProductList = () => {
 			dataIndex: 'actions',
 			render: (_, elm) => (
 				<div className="text-right">
-					<EllipsisDropdown menu={dropdownMenu(elm)}/>
+					<EllipsisDropdown menu={dropdownMenu(elm)} />
 				</div>
 			)
 		}
 	];
-	
+
 	const rowSelection = {
 		onChange: (key, rows) => {
 			setSelectedRows(rows)
@@ -140,14 +140,14 @@ const ProductList = () => {
 
 	const onSearch = e => {
 		const value = e.currentTarget.value
-		const searchArray = e.currentTarget.value? list : ProductListData
+		const searchArray = e.currentTarget.value ? list : ProductListData
 		const data = utils.wildCardSearch(searchArray, value)
 		setList(data)
 		setSelectedRowKeys([])
 	}
 
 	const handleShowCategory = value => {
-		if(value !== 'All') {
+		if (value !== 'All') {
 			const key = 'category'
 			const data = utils.filterArray(ProductListData, key, value)
 			setList(data)
@@ -161,14 +161,14 @@ const ProductList = () => {
 			<Flex alignItems="center" justifyContent="between" mobileFlex={false}>
 				<Flex className="mb-1" mobileFlex={false}>
 					<div className="mr-md-3 mb-3">
-						<Input placeholder="Search" prefix={<SearchOutlined />} onChange={e => onSearch(e)}/>
+						<Input placeholder="Search" prefix={<SearchOutlined />} onChange={e => onSearch(e)} />
 					</div>
 					<div className="mb-3">
-						<Select 
-							defaultValue="All" 
-							className="w-100" 
-							style={{ minWidth: 180 }} 
-							onChange={handleShowCategory} 
+						<Select
+							defaultValue="All"
+							className="w-100"
+							style={{ minWidth: 180 }}
+							onChange={handleShowCategory}
 							placeholder="Category"
 						>
 							<Option value="All">All</Option>
@@ -185,10 +185,10 @@ const ProductList = () => {
 				</div>
 			</Flex>
 			<div className="table-responsive">
-				<Table 
-					columns={tableColumns} 
-					dataSource={list} 
-					rowKey='id' 
+				<Table
+					columns={tableColumns}
+					dataSource={list}
+					rowKey='id'
 					rowSelection={{
 						selectedRowKeys: selectedRowKeys,
 						type: 'checkbox',
