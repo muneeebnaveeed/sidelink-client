@@ -52,7 +52,7 @@ const ProductList = () => {
 	const [limit, setLimit] = useState(2);
 	const [page, setPage] = useState(1);
 
-	const query = useQuery(['products', page], () => get('/products', { params: { page, limit } }), {
+	const query = useQuery(['products', page, limit], () => get('/products', { params: { page, limit } }), {
 		onSuccess: (data) => {
 			setList(data.docs);
 		},
@@ -103,10 +103,8 @@ const ProductList = () => {
 			onSuccess: (response) => {
 				message.success(`Product deleted`);
 			},
-		},
-		{
-			onError: (response) => {
-				message.error(response?.data?.data || response.message);
+			onError: (error) => {
+				message.error(error?.response?.data?.data[0] || error.message);
 			},
 		}
 	);
@@ -169,6 +167,11 @@ const ProductList = () => {
 			),
 			sorter: (a, b) => utils.antdTableSorter(a, b, 'price'),
 		},
+		{
+			title: 'SKU',
+			dataIndex: 'sku',
+			sorter: (a, b) => utils.antdTableSorter(a, b, 'price'),
+		},
 		// {
 		// 	title: 'Stock',
 		// 	dataIndex: 'stock',
@@ -216,8 +219,6 @@ const ProductList = () => {
 		}
 	};
 
-	console.log(list);
-
 	return (
 		<Card>
 			<Flex alignItems="center" justifyContent="between" mobileFlex={false}>
@@ -254,9 +255,14 @@ const ProductList = () => {
 					columns={tableColumns}
 					dataSource={query?.data?.docs}
 					pagination={{
-						// current: query?.data?.pagingCounter || 1,
+						current: query?.data?.pagingCounter,
 						pageSize: limit,
-						total: query?.data?.totalPages || 1,
+						// pageSizeOptions: [2, 4, 6, 8, 10],
+						responsive: true,
+						showLessItems: true,
+						showSizeChanger: true,
+						showQuickJumper: true,
+						total: query?.data?.totalDocs,
 						onChange: (page, pageSize) => {
 							setPage(page);
 							setLimit(pageSize);

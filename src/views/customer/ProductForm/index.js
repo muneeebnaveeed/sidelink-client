@@ -70,10 +70,8 @@ const ProductForm = (props) => {
 			onSuccess: (response) => {
 				message.success(`Created product to product list`);
 			},
-		},
-		{
-			onError: (response) => {
-				message.error(response?.data?.data || response.message);
+			onError: (error) => {
+				message.error(error?.response?.data?.data[0] || error.message);
 			},
 		}
 	);
