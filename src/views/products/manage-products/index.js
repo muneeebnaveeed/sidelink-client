@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card, Table, Select, Input, Button, Badge, Menu } from 'antd';
 import ProductListData from 'assets/data/product-list.data.json';
-import { EyeOutlined, DeleteOutlined, SearchOutlined, PlusCircleOutlined } from '@ant-design/icons';
+import { EyeOutlined, EditOutlined, DeleteOutlined, SearchOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import AvatarStatus from 'components/shared-components/AvatarStatus';
 import EllipsisDropdown from 'components/shared-components/EllipsisDropdown';
 import Flex from 'components/shared-components/Flex';
@@ -54,18 +54,22 @@ const ProductList = () => {
 
 	const query = useQuery(['products', page], () => get('/products', { params: { page, limit } }), {
 		onSuccess: (data) => {
-			console.log('response');
-			console.log(data.totalPages);
 			setList(data.docs);
 		},
 	});
 
 	const dropdownMenu = (row) => (
 		<Menu>
-			<Menu.Item onClick={() => viewDetails(row)}>
+			{/* <Menu.Item onClick={() => viewDetails(row)}>
 				<Flex alignItems="center">
 					<EyeOutlined />
 					<span className="ml-2">View Details</span>
+				</Flex>
+			</Menu.Item> */}
+			<Menu.Item onClick={() => editProduct(row)}>
+				<Flex alignItems="center">
+					<EditOutlined />
+					<span className="ml-2">Edit</span>
 				</Flex>
 			</Menu.Item>
 			<Menu.Item onClick={() => deleteRow(row)}>
@@ -82,7 +86,14 @@ const ProductList = () => {
 	};
 
 	const viewDetails = (row) => {
-		history.push(`/app/apps/ecommerce/edit-product/${row.id}`);
+		// history.push(`/app/products/edit-product/${row.id}`);
+	};
+
+	const editProduct = (row) => {
+		history.push({
+			pathname: `/app/products/edit-product/${row.id}`,
+			state: { price: row?.price, name: row?.name, sku: row?.sku },
+		});
 	};
 
 	const deleteRow = (row) => {
@@ -151,15 +162,15 @@ const ProductList = () => {
 		// 	render: (stock) => <Flex alignItems="center">{getStockStatus(stock)}</Flex>,
 		// 	sorter: (a, b) => utils.antdTableSorter(a, b, 'stock'),
 		// },
-		// {
-		// 	title: '',
-		// 	dataIndex: 'actions',
-		// 	render: (_, elm) => (
-		// 		<div className="text-right">
-		// 			<EllipsisDropdown menu={dropdownMenu(elm)} />
-		// 		</div>
-		// 	),
-		// },
+		{
+			title: '',
+			dataIndex: 'actions',
+			render: (_, elm) => (
+				<div className="text-right">
+					<EllipsisDropdown menu={dropdownMenu(elm)} />
+				</div>
+			),
+		},
 	];
 
 	const rowSelection = {

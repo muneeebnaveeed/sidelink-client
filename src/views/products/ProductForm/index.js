@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import PageHeaderAlt from 'components/layout-components/PageHeaderAlt';
 import { Tabs, Form, Button, message } from 'antd';
 import Flex from 'components/shared-components/Flex';
@@ -8,8 +9,7 @@ import GeneralField from './GeneralField';
 import ProductListData from 'assets/data/product-list.data.json';
 import { useMutation } from 'react-query';
 import axios from 'axios';
-import { post } from 'utils/server';
-
+import { patch, post } from 'utils/server';
 const { TabPane } = Tabs;
 
 const getBase64 = (img, callback) => {
@@ -22,31 +22,28 @@ const ADD = 'ADD';
 const EDIT = 'EDIT';
 
 const ProductForm = (props) => {
+	const location = useLocation();
+
 	const { mode = ADD, param } = props;
 
 	const [form] = Form.useForm();
-	const [uploadedImg, setImage] = useState('');
+	// const [uploadedImg, setImage] = useState('');
 	const [uploadLoading, setUploadLoading] = useState(false);
 	const [submitLoading, setSubmitLoading] = useState(false);
+	const [id, setId] = useState('');
 
 	useEffect(() => {
 		if (mode === EDIT) {
 			console.log('is edit');
 			console.log('props', props);
 			const { id } = param;
-			const produtId = parseInt(id);
-			const productData = ProductListData.filter((product) => product.id === produtId);
-			const product = productData[0];
+			// const productId = parseInt(id);
 			form.setFieldsValue({
-				comparePrice: 0.0,
-				cost: 0.0,
-				taxRate: 6,
-				sku: 'There are many variations of passages of Lorem Ipsum available.',
-				category: product.category,
-				name: product.name,
-				price: product.price,
+				name: location.state?.name,
+				price: location.state?.price,
+				sku: location.state?.sku,
 			});
-			setImage(product.image);
+			setId(id);
 		}
 	}, [form, mode, param, props]);
 
@@ -57,7 +54,7 @@ const ProductForm = (props) => {
 		}
 		if (info.file.status === 'done') {
 			getBase64(info.file.originFileObj, (imageUrl) => {
-				setImage(imageUrl);
+				// setImage(imageUrl);
 				setUploadLoading(true);
 			});
 		}
@@ -79,6 +76,22 @@ const ProductForm = (props) => {
 		}
 	);
 
+	const editProductMutation = useMutation(
+		(payload) => {
+			return patch(`/products/id/${id}`, payload);
+		},
+		{
+			onSuccess: (response) => {
+				message.success(`Product saved`);
+			},
+		},
+		{
+			onError: (response) => {
+				message.error(response?.data?.data || response.message);
+			},
+		}
+	);
+
 	const onFinish = () => {
 		setSubmitLoading(true);
 		form
@@ -91,7 +104,7 @@ const ProductForm = (props) => {
 						addProductMutation.mutate(values);
 					}
 					if (mode === EDIT) {
-						message.success(`Product saved`);
+						editProductMutation.mutate(values);
 					}
 				}, 1500);
 			})
@@ -132,7 +145,7 @@ const ProductForm = (props) => {
 					{/* <Tabs defaultActiveKey="1" style={{ marginTop: 30 }}> */}
 					{/* <TabPane tab="General" key="1"> */}
 					<GeneralField
-						uploadedImg={uploadedImg}
+						// uploadedImg={uploadedImg}
 						uploadLoading={uploadLoading}
 						handleUploadChange={handleUploadChange}
 					/>
