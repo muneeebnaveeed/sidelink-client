@@ -78,11 +78,11 @@ const ProductList = () => {
 	);
 
 	const addProduct = () => {
-		history.push(`/views/products/add-product`);
+		history.push(`/app/products/add-product`);
 	};
 
 	const viewDetails = (row) => {
-		history.push(`/views/app-views/products/edit-product/${row.id}`);
+		history.push(`/app/products/edit-product/${row.id}`);
 	};
 
 	const deleteRow = (row) => {
@@ -161,6 +161,10 @@ const ProductList = () => {
 			),
 		},
 	];
+
+
+
+
 
 	const rowSelection = {
 		onChange: (key, rows) => {
@@ -243,6 +247,8 @@ const ProductList = () => {
 				/>
 			</div>
 		</Card>
+
+
 	);
 };
 

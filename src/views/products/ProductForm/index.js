@@ -38,15 +38,15 @@ const ProductForm = (props) => {
 			const productData = ProductListData.filter((product) => product.id === produtId);
 			const product = productData[0];
 			form.setFieldsValue({
-				comparePrice: 0.0,
-				cost: 0.0,
-				taxRate: 6,
+				// comparePrice: 0.0,
+				// cost: 0.0,
+				// taxRate: 6,
 				sku: 'There are many variations of passages of Lorem Ipsum available.',
-				category: product.category,
-				name: product.name,
-				price: product.price,
+				// category: product.category,
+				// name: product.name,
+				// price: product.price,
 			});
-			setImage(product.image);
+			// setImage(product.image);
 		}
 	}, [form, mode, param, props]);
 
