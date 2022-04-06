@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import { Card, Table, Select, Input, Button, Badge, Menu } from 'antd';
+import { Card, Table, Select, Input, Button, Badge, Menu, message } from 'antd';
 import ProductListData from 'assets/data/product-list.data.json';
-import { EyeOutlined, DeleteOutlined, SearchOutlined, PlusCircleOutlined } from '@ant-design/icons';
+import { EyeOutlined, EditOutlined, DeleteOutlined, SearchOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import AvatarStatus from 'components/shared-components/AvatarStatus';
 import EllipsisDropdown from 'components/shared-components/EllipsisDropdown';
 import Flex from 'components/shared-components/Flex';
 import NumberFormat from 'react-number-format';
 import { useHistory } from 'react-router-dom';
 import utils from 'utils';
-import { useQuery } from 'react-query';
-import { get } from 'utils/server';
+import { useMutation, useQuery } from 'react-query';
+import { del, get } from 'utils/server';
 import axios from 'axios';
 
 const { Option } = Select;
@@ -49,8 +49,10 @@ const ProductList = () => {
 	const [list, setList] = useState([]);
 	const [selectedRows, setSelectedRows] = useState([]);
 	const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+	const [limit, setLimit] = useState(2);
+	const [page, setPage] = useState(1);
 
-	const query = useQuery('products', () => get('/products'), {
+	const query = useQuery(['products', page, limit], () => get('/products', { params: { page, limit } }), {
 		onSuccess: (data) => {
 			setList(data.docs);
 		},
@@ -58,10 +60,16 @@ const ProductList = () => {
 
 	const dropdownMenu = (row) => (
 		<Menu>
-			<Menu.Item onClick={() => viewDetails(row)}>
+			{/* <Menu.Item onClick={() => viewDetails(row)}>
 				<Flex alignItems="center">
 					<EyeOutlined />
 					<span className="ml-2">View Details</span>
+				</Flex>
+			</Menu.Item> */}
+			<Menu.Item onClick={() => editProduct(row)}>
+				<Flex alignItems="center">
+					<EditOutlined />
+					<span className="ml-2">Edit</span>
 				</Flex>
 			</Menu.Item>
 			<Menu.Item onClick={() => deleteRow(row)}>
@@ -78,22 +86,45 @@ const ProductList = () => {
 	};
 
 	const viewDetails = (row) => {
-		history.push(`/app/apps/ecommerce/edit-product/${row.id}`);
+		// history.push(`/app/products/edit-product/${row.id}`);
 	};
 
-	const deleteRow = (row) => {
-		const objKey = 'id';
-		let data = list;
-		if (selectedRows.length > 1) {
-			selectedRows.forEach((elm) => {
-				data = utils.deleteArrayRow(data, objKey, elm.id);
-				setList(data);
-				setSelectedRows([]);
-			});
-		} else {
-			data = utils.deleteArrayRow(data, objKey, row.id);
-			setList(data);
+	const editProduct = (row) => {
+		history.push({
+			pathname: `/app/products/edit-product/${row.id}`,
+			state: { price: row?.price, name: row?.name, sku: row?.sku },
+		});
+	};
+	const deleteProductMutation = useMutation(
+		(payload) => {
+			return del(`/products/id/${payload}`);
+		},
+		{
+			onSuccess: (response) => {
+				message.success(`Product deleted`);
+			},
+			onError: (error) => {
+				message.error(error?.response?.data?.data[0] || error.message);
+			},
 		}
+	);
+	const deleteRow = (row) => {
+		deleteProductMutation.mutate(row._id);
+		if (deleteProductMutation.isSuccess) {
+			setList((prev) => prev.filter((doc) => doc._id !== row._id));
+		}
+		// const objKey = 'id';
+		// let data = list;
+		// if (selectedRows.length > 1) {
+		// 	selectedRows.forEach((elm) => {
+		// 		data = utils.deleteArrayRow(data, objKey, elm.id);
+		// 		setList(data);
+		// 		setSelectedRows([]);
+		// 	});
+		// } else {
+		// 	data = utils.deleteArrayRow(data, objKey, row.id);
+		// 	setList(data);
+		// }
 	};
 
 	const tableColumns = [
@@ -136,6 +167,11 @@ const ProductList = () => {
 			),
 			sorter: (a, b) => utils.antdTableSorter(a, b, 'price'),
 		},
+		{
+			title: 'SKU',
+			dataIndex: 'sku',
+			sorter: (a, b) => utils.antdTableSorter(a, b, 'price'),
+		},
 		// {
 		// 	title: 'Stock',
 		// 	dataIndex: 'stock',
@@ -147,15 +183,15 @@ const ProductList = () => {
 		// 	render: (stock) => <Flex alignItems="center">{getStockStatus(stock)}</Flex>,
 		// 	sorter: (a, b) => utils.antdTableSorter(a, b, 'stock'),
 		// },
-		// {
-		// 	title: '',
-		// 	dataIndex: 'actions',
-		// 	render: (_, elm) => (
-		// 		<div className="text-right">
-		// 			<EllipsisDropdown menu={dropdownMenu(elm)} />
-		// 		</div>
-		// 	),
-		// },
+		{
+			title: '',
+			dataIndex: 'actions',
+			render: (_, elm) => (
+				<div className="text-right">
+					<EllipsisDropdown menu={dropdownMenu(elm)} />
+				</div>
+			),
+		},
 	];
 
 	const rowSelection = {
@@ -183,8 +219,6 @@ const ProductList = () => {
 		}
 	};
 
-	console.log(list);
-
 	return (
 		<Card>
 			<Flex alignItems="center" justifyContent="between" mobileFlex={false}>
@@ -211,14 +245,29 @@ const ProductList = () => {
 				</Flex>
 				<div>
 					<Button onClick={addProduct} type="primary" icon={<PlusCircleOutlined />} block>
-						Add Sales
+						Add product
 					</Button>
 				</div>
 			</Flex>
 			<div className="table-responsive">
 				<Table
+					loading={query.isLoading}
 					columns={tableColumns}
-					dataSource={list}
+					dataSource={query?.data?.docs}
+					pagination={{
+						current: query?.data?.pagingCounter,
+						pageSize: limit,
+						// pageSizeOptions: [2, 4, 6, 8, 10],
+						responsive: true,
+						showLessItems: true,
+						showSizeChanger: true,
+						showQuickJumper: true,
+						total: query?.data?.totalDocs,
+						onChange: (page, pageSize) => {
+							setPage(page);
+							setLimit(pageSize);
+						},
+					}}
 					rowKey="id"
 					rowSelection={{
 						selectedRowKeys: selectedRowKeys,

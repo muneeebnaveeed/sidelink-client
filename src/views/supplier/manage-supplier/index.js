@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
-import { Card, Table, Select, Input, Button, Badge, Menu } from 'antd';
-import ProductListData from 'assets/data/product-list.data.json';
-import { EyeOutlined, DeleteOutlined, SearchOutlined, PlusCircleOutlined } from '@ant-design/icons';
+import { Card, Table, Select, Input, Button, Badge, Menu, message } from 'antd';
+import ManageListData from 'assets/data/product-list.data.json';
+import { EyeOutlined, EditOutlined, DeleteOutlined, SearchOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import AvatarStatus from 'components/shared-components/AvatarStatus';
 import EllipsisDropdown from 'components/shared-components/EllipsisDropdown';
 import Flex from 'components/shared-components/Flex';
 import NumberFormat from 'react-number-format';
 import { useHistory } from 'react-router-dom';
 import utils from 'utils';
-import { useQuery } from 'react-query';
-import { get } from 'utils/server';
+import { useMutation, useQuery } from 'react-query';
+import { del, get } from 'utils/server';
 import axios from 'axios';
+// import EditSupplier from '../edit-supplier';
 
 const { Option } = Select;
 
@@ -49,8 +50,10 @@ const ProductList = () => {
 	const [list, setList] = useState([]);
 	const [selectedRows, setSelectedRows] = useState([]);
 	const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+	const [limit, setLimit] = useState(2);
+	const [page, setPage] = useState(1);
 
-	const query = useQuery('products', () => get('/products'), {
+	const query = useQuery(['contacts', page, limit], () => get('/contacts', { params: { page, limit } }), {
 		onSuccess: (data) => {
 			setList(data.docs);
 		},
@@ -58,10 +61,16 @@ const ProductList = () => {
 
 	const dropdownMenu = (row) => (
 		<Menu>
-			<Menu.Item onClick={() => viewDetails(row)}>
+			{/* <Menu.Item onClick={() => viewDetails(row)}>
 				<Flex alignItems="center">
 					<EyeOutlined />
 					<span className="ml-2">View Details</span>
+				</Flex>
+			</Menu.Item> */}
+			<Menu.Item onClick={() => editSupplier(row)}>
+				<Flex alignItems="center">
+					<EditOutlined />
+					<span className="ml-2">Edit</span>
 				</Flex>
 			</Menu.Item>
 			<Menu.Item onClick={() => deleteRow(row)}>
@@ -74,26 +83,49 @@ const ProductList = () => {
 	);
 
 	const addProduct = () => {
-		history.push(`/app/products/add-product`);
+		history.push(`/app/supplier/add-supplier`);
 	};
 
 	const viewDetails = (row) => {
-		history.push(`/app/apps/ecommerce/edit-product/${row.id}`);
+		// history.push(`/app/products/edit-product/${row.id}`);
 	};
 
-	const deleteRow = (row) => {
-		const objKey = 'id';
-		let data = list;
-		if (selectedRows.length > 1) {
-			selectedRows.forEach((elm) => {
-				data = utils.deleteArrayRow(data, objKey, elm.id);
-				setList(data);
-				setSelectedRows([]);
-			});
-		} else {
-			data = utils.deleteArrayRow(data, objKey, row.id);
-			setList(data);
+	const editSupplier = (row) => {
+		history.push({
+			pathname: `/app/supplier/edit-supplier/${row.id}`,
+			state: { phone: row?.phone, name: row?.name },
+		});
+	};
+	const deleteSupplierMutation = useMutation(
+		(payload) => {
+			return del(`/contacts/id/${payload}`);
+		},
+		{
+			onSuccess: (response) => {
+				message.success(`Supplier deleted`);
+			},
+			onError: (error) => {
+				message.error(error?.response?.data?.data[0] || error.message);
+			},
 		}
+	);
+	const deleteRow = (row) => {
+		deleteSupplierMutation.mutate(row._id);
+		if (deleteSupplierMutation.isSuccess) {
+			setList((prev) => prev.filter((doc) => doc._id !== row._id));
+		}
+		// const objKey = 'id';
+		// let data = list;
+		// if (selectedRows.length > 1) {
+		// 	selectedRows.forEach((elm) => {
+		// 		data = utils.deleteArrayRow(data, objKey, elm.id);
+		// 		setList(data);
+		// 		setSelectedRows([]);
+		// 	});
+		// } else {
+		// 	data = utils.deleteArrayRow(data, objKey, row.id);
+		// 	setList(data);
+		// }
 	};
 
 	const tableColumns = [
@@ -112,7 +144,7 @@ const ProductList = () => {
 		// 	sorter: (a, b) => utils.antdTableSorter(a, b, 'name'),
 		// },
 		{
-			title: 'Product',
+			title: 'Supplier',
 			dataIndex: 'name',
 			sorter: (a, b) => utils.antdTableSorter(a, b, 'name'),
 		},
@@ -121,20 +153,25 @@ const ProductList = () => {
 		// 	dataIndex: 'category',
 		// 	sorter: (a, b) => utils.antdTableSorter(a, b, 'category'),
 		// },
+		// {
+		// 	title: 'Phone',
+		// 	dataIndex: 'phone',
+		// 	render: (phone) => (
+		// 		<div>
+		// 			<NumberFormat
+		// 				displayType={'text'}
+		// 				value={(Math.round(phone * 100) / 100).toFixed(2)}
+		// 				prefix={'$'}
+		// 				thousandSeparator={true}
+		// 			/>
+		// 		</div>
+		// 	),
+		// 	sorter: (a, b) => utils.antdTableSorter(a, b, 'phone'),
+		// },
 		{
-			title: 'Price',
-			dataIndex: 'price',
-			render: (price) => (
-				<div>
-					<NumberFormat
-						displayType={'text'}
-						value={(Math.round(price * 100) / 100).toFixed(2)}
-						prefix={'$'}
-						thousandSeparator={true}
-					/>
-				</div>
-			),
-			sorter: (a, b) => utils.antdTableSorter(a, b, 'price'),
+			title: 'PHONE',
+			dataIndex: 'phone',
+			sorter: (a, b) => utils.antdTableSorter(a, b, 'phone'),
 		},
 		// {
 		// 	title: 'Stock',
@@ -147,15 +184,15 @@ const ProductList = () => {
 		// 	render: (stock) => <Flex alignItems="center">{getStockStatus(stock)}</Flex>,
 		// 	sorter: (a, b) => utils.antdTableSorter(a, b, 'stock'),
 		// },
-		// {
-		// 	title: '',
-		// 	dataIndex: 'actions',
-		// 	render: (_, elm) => (
-		// 		<div className="text-right">
-		// 			<EllipsisDropdown menu={dropdownMenu(elm)} />
-		// 		</div>
-		// 	),
-		// },
+		{
+			title: '',
+			dataIndex: 'actions',
+			render: (_, elm) => (
+				<div className="text-right">
+					<EllipsisDropdown menu={dropdownMenu(elm)} />
+				</div>
+			),
+		},
 	];
 
 	const rowSelection = {
@@ -182,8 +219,6 @@ const ProductList = () => {
 			setList(list);
 		}
 	};
-
-	console.log(list);
 
 	return (
 		<Card>
@@ -217,8 +252,24 @@ const ProductList = () => {
 			</Flex>
 			<div className="table-responsive">
 				<Table
+					loading={query.isLoading}
 					columns={tableColumns}
-					dataSource={list}
+					dataSource={query?.data?.docs}
+					pagination={{
+						current: query?.data?.pagingCounter,
+						pageSize: limit,
+						// pageSizeOptions: [2, 4, 6, 8, 10],
+						responsive: true,
+						showLessItems: true,
+						showSizeChanger: true,
+						showQuickJumper: true,
+						total: query?.data?.totalDocs,
+						onChange: (page, pageSize) => {
+							setPage(page);
+							setLimit(pageSize);
+						},
+					}}
+
 					rowKey="id"
 					rowSelection={{
 						selectedRowKeys: selectedRowKeys,

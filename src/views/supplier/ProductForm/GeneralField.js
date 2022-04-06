@@ -11,21 +11,21 @@ const rules = {
 	name: [
 		{
 			required: true,
-			message: 'Please enter product name',
+			message: 'Please enter supplier name',
 		},
 	],
-	sku: [
-		{
-			optional: true,
-			message: 'Please enter product sku ',
-		},
-	],
-	price: [
+	phone: [
 		{
 			required: true,
-			message: 'Please enter product price',
+			message: 'Please enter  phone  ',
 		},
 	],
+	// type: [
+	// 	{
+	// 		required: true,
+	// 		message: 'Please enter supplier type',
+	// 	},
+	// ],
 	// comparePrice: [
 	// ],
 	// taxRate: [
@@ -78,9 +78,13 @@ const GeneralField = (props) => (
 				</Form.Item> */}
 
 
-				<Form.Item name="phoneno" label="PhoneNumber" rules={rules.phone}>
+				<Form.Item name="phone" label="PhoneNumber" rules={rules.phone}>
 					<Input placeholder="PhoneNumber" />
 				</Form.Item>
+
+				{/* <Form.Item name="type" label="Type" rules={rules.type}>
+					<Input placeholder="Type" />
+				</Form.Item> */}
 				{/* </Card> */}
 
 				{/* <Card title="Pricing"> */}

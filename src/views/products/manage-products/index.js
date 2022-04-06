@@ -250,6 +250,7 @@ const ProductList = () => {
 				</div>
 			</Flex>
 			<div className="table-responsive">
+
 				<Table
 					loading={query.isLoading}
 					columns={tableColumns}

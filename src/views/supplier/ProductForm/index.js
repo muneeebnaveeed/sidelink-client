@@ -5,9 +5,12 @@ import Flex from 'components/shared-components/Flex';
 import GeneralField from './GeneralField';
 // import VariationField from './VariationField'
 // import ShippingField from './ShippingField'
-import ProductListData from 'assets/data/product-list.data.json';
+import supplierListData from 'assets/data/product-list.data.json';
 import { useMutation } from 'react-query';
 import axios from 'axios';
+import { patch, post } from 'utils/server';
+import { useLocation } from 'react-router-dom';
+// import Supplier from '..';
 
 const { TabPane } = Tabs;
 
@@ -21,31 +24,29 @@ const ADD = 'ADD';
 const EDIT = 'EDIT';
 
 const ProductForm = (props) => {
+	const location = useLocation();
 	const { mode = ADD, param } = props;
 
 	const [form] = Form.useForm();
-	const [uploadedImg, setImage] = useState('');
+	// const [uploadedImg, setImage] = useState('');
 	const [uploadLoading, setUploadLoading] = useState(false);
 	const [submitLoading, setSubmitLoading] = useState(false);
+	const [id, setId] = useState('');
 
 	useEffect(() => {
 		if (mode === EDIT) {
 			console.log('is edit');
 			console.log('props', props);
 			const { id } = param;
-			const produtId = parseInt(id);
-			const productData = ProductListData.filter((product) => product.id === produtId);
-			const product = productData[0];
+			// const supplierId = parseInt(id);
+			// const supplierData = supplierListData.filter((supplier) => supplier.id === supplierId);
+			// const supplier = supplierData[0];
 			form.setFieldsValue({
-				comparePrice: 0.0,
-				cost: 0.0,
-				taxRate: 6,
-				sku: 'There are many variations of passages of Lorem Ipsum available.',
-				category: product.category,
-				name: product.name,
-				price: product.price,
+				name: location.state?.name,
+				phone: location.state?.phone,
 			});
-			setImage(product.image);
+			setId(id);
+
 		}
 	}, [form, mode, param, props]);
 
@@ -56,21 +57,38 @@ const ProductForm = (props) => {
 		}
 		if (info.file.status === 'done') {
 			getBase64(info.file.originFileObj, (imageUrl) => {
-				setImage(imageUrl);
+				// setImage(imageUrl);
 				setUploadLoading(true);
 			});
 		}
 	};
 
-	const addProductMutation = useMutation(
+	const addSupplierMutation = useMutation(
 		(payload) => {
-			return axios.post('http://sidelink-backend.herokuapp.com' + '/products', { payload });
+			return post('/contacts', { ...payload, type: "SUPPLIER" });
+
 		},
 		{
 			onSuccess: (response) => {
-				message.success(`Created product to product list`);
+				message.success(`Created  supplier to supplier list`);
 			},
 			onError: (error) => {
+				message.error(error?.response?.data?.data[0] || error.message);
+			},
+		}
+	);
+
+
+	const editSupplierMutation = useMutation(
+		(payload) => {
+			return patch(`/contacts/id/${id}`, payload);
+		},
+		{
+			onSuccess: (response) => {
+				message.success(`supplier saved`);
+			},
+			onError: (error) => {
+				console.log(error)
 				message.error(error?.response?.data?.data[0] || error.message);
 			},
 		}
@@ -85,10 +103,10 @@ const ProductForm = (props) => {
 					setSubmitLoading(false);
 					if (mode === ADD) {
 						console.log({ values });
-						addProductMutation.mutate(values);
+						addSupplierMutation.mutate(values);
 					}
 					if (mode === EDIT) {
-						message.success(`Product saved`);
+						editSupplierMutation.mutate(values)
 					}
 				}, 1500);
 			})
@@ -115,7 +133,7 @@ const ProductForm = (props) => {
 				<PageHeaderAlt className="border-bottom" overlap>
 					<div className="container">
 						<Flex className="py-2" mobileFlex={false} justifyContent="between" alignItems="center">
-							<h2 className="mb-3">{mode === 'ADD' ? 'Add New Supplier' : `Edit Product`} </h2>
+							<h2 className="mb-3">{mode === 'ADD' ? 'Add New Supplier' : `Edit Supplier`} </h2>
 							<div className="mb-3">
 								<Button className="mr-2">Discard</Button>
 								<Button type="primary" onClick={() => onFinish()} htmlType="submit" loading={submitLoading}>
@@ -129,7 +147,7 @@ const ProductForm = (props) => {
 					{/* <Tabs defaultActiveKey="1" style={{ marginTop: 30 }}> */}
 					{/* <TabPane tab="General" key="1"> */}
 					<GeneralField
-						uploadedImg={uploadedImg}
+						// uploadedImg={uploadedImg}
 						uploadLoading={uploadLoading}
 						handleUploadChange={handleUploadChange}
 					/>

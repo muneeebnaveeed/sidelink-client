@@ -23,7 +23,6 @@ const EDIT = 'EDIT';
 
 const ProductForm = (props) => {
 	const location = useLocation();
-
 	const { mode = ADD, param } = props;
 
 	const [form] = Form.useForm();
@@ -123,6 +122,7 @@ const ProductForm = (props) => {
 					widthUnit: 'cm',
 					weightUnit: 'kg',
 				}}
+
 			>
 				<PageHeaderAlt className="border-bottom" overlap>
 					<div className="container">

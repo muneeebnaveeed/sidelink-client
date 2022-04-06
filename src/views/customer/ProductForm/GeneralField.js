@@ -11,19 +11,19 @@ const rules = {
 	name: [
 		{
 			required: true,
-			message: 'Please enter product name',
+			message: 'Please enter  name',
 		},
 	],
-	sku: [
-		{
-			optional: true,
-			message: 'Please enter product sku ',
-		},
-	],
-	price: [
+	// sku: [
+	// 	{
+	// 		optional: true,
+	// 		message: 'Please enter product sku ',
+	// 	},
+	// ],
+	phone: [
 		{
 			required: true,
-			message: 'Please enter product price',
+			message: 'Please enter  phone',
 		},
 	],
 	// comparePrice: [
@@ -69,14 +69,13 @@ const GeneralField = (props) => (
 	<Row gutter={16}>
 		<Col xs={24} sm={24} md={17}>
 			<Card title="Basic Info">
-				<Form.Item name="name" label="Product name" rules={rules.name} >
-					<Input placeholder="Product Name" />
-				</Form.Item>
-
 				<Form.Item name="name" label="Customer name" rules={rules.name} >
 					<Input placeholder="Customer Name" />
 				</Form.Item>
 
+				<Form.Item name="phone" label="PhoneNumber" rules={rules.phone}>
+					<Input placeholder="PhoneNumber" />
+				</Form.Item>
 
 				{/* <Form.Item name="sku" label="SKU" rules={rules.sku}>
 					<Input placeholder="SKU" />
