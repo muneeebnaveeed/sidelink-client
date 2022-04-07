@@ -256,7 +256,7 @@ const ProductList = () => {
 					columns={tableColumns}
 					dataSource={query?.data?.docs}
 					pagination={{
-						current: query?.data?.pagingCounter,
+						// current: query?.data?.pagingCounter,
 						pageSize: limit,
 						// pageSizeOptions: [2, 4, 6, 8, 10],
 						responsive: true,

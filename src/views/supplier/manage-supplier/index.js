@@ -11,7 +11,6 @@ import utils from 'utils';
 import { useMutation, useQuery } from 'react-query';
 import { del, get } from 'utils/server';
 import axios from 'axios';
-// import EditSupplier from '../edit-supplier';
 
 const { Option } = Select;
 
@@ -111,7 +110,9 @@ const ProductList = () => {
 	);
 	const deleteRow = (row) => {
 		deleteSupplierMutation.mutate(row._id);
+
 		if (deleteSupplierMutation.isSuccess) {
+			console.log("true");
 			setList((prev) => prev.filter((doc) => doc._id !== row._id));
 		}
 		// const objKey = 'id';
@@ -256,7 +257,7 @@ const ProductList = () => {
 					columns={tableColumns}
 					dataSource={query?.data?.docs}
 					pagination={{
-						current: query?.data?.pagingCounter,
+						// current: query?.data?.pagingCounter,
 						pageSize: limit,
 						// pageSizeOptions: [2, 4, 6, 8, 10],
 						responsive: true,
