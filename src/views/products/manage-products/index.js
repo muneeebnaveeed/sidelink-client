@@ -52,7 +52,7 @@ const ProductList = () => {
 	const [limit, setLimit] = useState(2);
 	const [page, setPage] = useState(1);
 
-	const query = useQuery(['products', page, limit], () => get('/products', { params: { page, limit } }), {
+	const query = useQuery(['products', page, limit, list], () => get('/products', { params: { page, limit } }), {
 		onSuccess: (data) => {
 			setList(data.docs);
 		},
@@ -100,7 +100,9 @@ const ProductList = () => {
 			return del(`/products/id/${payload}`);
 		},
 		{
-			onSuccess: (response) => {
+			onSuccess: (response, payload) => {
+				setList((prev) => prev.filter((doc) => doc._id !== payload));
+
 				message.success(`Product deleted`);
 			},
 			onError: (error) => {
@@ -110,14 +112,12 @@ const ProductList = () => {
 	);
 	const deleteRow = (row) => {
 		deleteProductMutation.mutate(row._id);
-		if (deleteProductMutation.isSuccess) {
-			setList((prev) => prev.filter((doc) => doc._id !== row._id));
-		}
+
 		// const objKey = 'id';
 		// let data = list;
 		// if (selectedRows.length > 1) {
 		// 	selectedRows.forEach((elm) => {
-		// 		data = utils.deleteArrayRow(data, objKey, elm.id);
+		// data = utils.deleteArrayRow(data, objKey, elm.id);
 		// 		setList(data);
 		// 		setSelectedRows([]);
 		// 	});
@@ -250,7 +250,6 @@ const ProductList = () => {
 				</div>
 			</Flex>
 			<div className="table-responsive">
-
 				<Table
 					loading={query.isLoading}
 					columns={tableColumns}
