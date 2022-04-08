@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Card, Table, Select, Input, Button, Badge, Menu, message } from 'antd';
+import { Popconfirm, } from 'antd';
+import { Card, Table, Select, Input, Button, Badge, Menu, message, } from 'antd';
 import ManageListData from 'assets/data/product-list.data.json';
 import { EyeOutlined, EditOutlined, DeleteOutlined, SearchOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import AvatarStatus from 'components/shared-components/AvatarStatus';
@@ -9,8 +10,9 @@ import NumberFormat from 'react-number-format';
 import { useHistory } from 'react-router-dom';
 import utils from 'utils';
 import { useMutation, useQuery } from 'react-query';
-import { del, get } from 'utils/server';
+import { del, get, } from 'utils/server';
 import axios from 'axios';
+
 
 const { Option } = Select;
 
@@ -51,8 +53,11 @@ const ProductList = () => {
 	const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 	const [limit, setLimit] = useState(2);
 	const [page, setPage] = useState(1);
+	const [popup, setPopup] = useState(false);
 
-	const query = useQuery(['contacts', page, limit], () => get('/contacts', { params: { page, limit } }), {
+
+
+	const query = useQuery(['supplier', page, limit, list], () => get('/contacts', { params: { page, limit } }), {
 		onSuccess: (data) => {
 			setList(data.docs);
 		},
@@ -72,12 +77,17 @@ const ProductList = () => {
 					<span className="ml-2">Edit</span>
 				</Flex>
 			</Menu.Item>
-			<Menu.Item onClick={() => deleteRow(row)}>
+
+			<Menu.Item
+				onClick={() => deleteRow(row)}
+			>
 				<Flex alignItems="center">
 					<DeleteOutlined />
 					<span className="ml-2">{selectedRows.length > 0 ? `Delete (${selectedRows.length})` : 'Delete'}</span>
 				</Flex>
 			</Menu.Item>
+
+
 		</Menu>
 	);
 
@@ -95,31 +105,66 @@ const ProductList = () => {
 			state: { phone: row?.phone, name: row?.name },
 		});
 	};
+
+
+
+
+
+
 	const deleteSupplierMutation = useMutation(
 		(payload) => {
 			return del(`/contacts/id/${payload}`);
+
 		},
 		{
-			onSuccess: (response) => {
+			onSuccess: (response, payload) => {
+
+				setList((prev) => prev.filter((doc) => doc._id !== payload));
+
 				message.success(`Supplier deleted`);
+
 			},
 			onError: (error) => {
 				message.error(error?.response?.data?.data[0] || error.message);
 			},
+
 		}
 	);
+
+
+
+
 	const deleteRow = (row) => {
+
+		var a = window.confirm("Are you sure to delete row ?");
+
+		if (a) {
+			alert("clicked on yes ");
+
+		} else {
+			alert("clicked on no");
+
+		}
+
+
+
+
+		// if (window.confirm('You want to delette ?')) {
+		// 	// eslint - disable - line
+		// 	this.props.onDelete(row);
+		// }
+
+
+
+
 		deleteSupplierMutation.mutate(row._id);
 
-		if (deleteSupplierMutation.isSuccess) {
-			console.log("true");
-			setList((prev) => prev.filter((doc) => doc._id !== row._id));
-		}
+
 		// const objKey = 'id';
 		// let data = list;
 		// if (selectedRows.length > 1) {
 		// 	selectedRows.forEach((elm) => {
-		// 		data = utils.deleteArrayRow(data, objKey, elm.id);
+		// data = utils.deleteArrayRow(data, objKey, elm.id);
 		// 		setList(data);
 		// 		setSelectedRows([]);
 		// 	});

@@ -52,7 +52,7 @@ const ProductList = () => {
 	const [limit, setLimit] = useState(2);
 	const [page, setPage] = useState(1);
 
-	const query = useQuery(['contacts', page, limit], () => get('/contacts', { params: { page, limit } }), {
+	const query = useQuery(['contacts', page, limit, list], () => get('/contacts', { params: { page, limit } }), {
 		onSuccess: (data) => {
 			setList(data.docs);
 		},
@@ -95,29 +95,48 @@ const ProductList = () => {
 			state: { phone: row?.phone, name: row?.name },
 		});
 	};
-	const deleteCustomerMutation = useMutation(
+
+
+	const deleteContactMutation = useMutation(
 		(payload) => {
 			return del(`/contacts/id/${payload}`);
+
 		},
 		{
-			onSuccess: (response) => {
+			onSuccess: (response, payload) => {
+				setList((prev) => prev.filter((doc) => doc._id !== payload));
+
 				message.success(`Customer deleted`);
 			},
 			onError: (error) => {
 				message.error(error?.response?.data?.data[0] || error.message);
 			},
 		}
+
 	);
+
+
 	const deleteRow = (row) => {
-		deleteCustomerMutation.mutate(row._id);
-		if (deleteCustomerMutation.isSuccess) {
-			setList((prev) => prev.filter((doc) => doc._id !== row._id));
+
+		var a = window.confirm("Are you sure to delete row ?");
+
+		if (a) {
+			alert("clicked on yes");
+
+		} else {
+			alert("clicked on no");
 		}
+
+
+
+
+		deleteContactMutation.mutate(row._id);
+
 		// const objKey = 'id';
 		// let data = list;
 		// if (selectedRows.length > 1) {
 		// 	selectedRows.forEach((elm) => {
-		// 		data = utils.deleteArrayRow(data, objKey, elm.id);
+		// data = utils.deleteArrayRow(data, objKey, elm.id);
 		// 		setList(data);
 		// 		setSelectedRows([]);
 		// 	});
@@ -126,7 +145,6 @@ const ProductList = () => {
 		// 	setList(data);
 		// }
 	};
-
 	const tableColumns = [
 		// {
 		// 	title: 'ID',

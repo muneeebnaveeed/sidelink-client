@@ -95,6 +95,9 @@ const ProductList = () => {
 			state: { price: row?.price, name: row?.name, sku: row?.sku },
 		});
 	};
+
+
+
 	const deleteProductMutation = useMutation(
 		(payload) => {
 			return del(`/products/id/${payload}`);
@@ -110,7 +113,23 @@ const ProductList = () => {
 			},
 		}
 	);
+
+
+
 	const deleteRow = (row) => {
+
+		var a = window.confirm("Are you sure to delete row ?");
+
+		if (a) {
+			alert("clicked on yes");
+
+		} else {
+			alert("clicked on no");
+		}
+
+
+
+
 		deleteProductMutation.mutate(row._id);
 
 		// const objKey = 'id';
