@@ -25,6 +25,7 @@ import {
 	PlusCircleOutlined,
 	FundOutlined,
 	ShoppingCartOutlined,
+	ShoppingOutlined,
 	BookOutlined,
 	FileUnknownOutlined,
 	ProfileOutlined,
@@ -182,30 +183,30 @@ const dashBoardNavTree = [
 		icon: DashboardOutlined,
 		breadcrumb: false,
 		submenu: [
-			{
-				key: 'dashboards-default',
-				path: `${APP_PREFIX_PATH}/dashboards/default`,
-				title: 'sidenav.dashboard.default',
-				icon: DashboardOutlined,
-				breadcrumb: false,
-				submenu: [],
-			},
-			{
-				key: 'dashboards-analytic',
-				path: `${APP_PREFIX_PATH}/dashboards/analytic`,
-				title: 'sidenav.dashboard.analytic',
-				icon: DotChartOutlined,
-				breadcrumb: false,
-				submenu: [],
-			},
-			{
-				key: 'dashboards-sales',
-				path: `${APP_PREFIX_PATH}/dashboards/sales`,
-				title: 'sidenav.dashboard.sales',
-				icon: FundOutlined,
-				breadcrumb: false,
-				submenu: [],
-			},
+			// {
+			// 	key: 'dashboards-default',
+			// 	path: `${APP_PREFIX_PATH}/dashboards/default`,
+			// 	title: 'sidenav.dashboard.default',
+			// 	icon: DashboardOutlined,
+			// 	breadcrumb: false,
+			// 	submenu: [],
+			// },
+			// {
+			// 	key: 'dashboards-analytic',
+			// 	path: `${APP_PREFIX_PATH}/dashboards/analytic`,
+			// 	title: 'sidenav.dashboard.analytic',
+			// 	icon: DotChartOutlined,
+			// 	breadcrumb: false,
+			// 	submenu: [],
+			// },
+			// {
+			// 	key: 'dashboards-sales',
+			// 	path: `${APP_PREFIX_PATH}/dashboards/sales`,
+			// 	title: 'sidenav.dashboard.sales',
+			// 	icon: FundOutlined,
+			// 	breadcrumb: false,
+			// 	submenu: [],
+			// },
 			{
 				key: 'products',
 				path: `${APP_PREFIX_PATH}/products`,
@@ -214,173 +215,113 @@ const dashBoardNavTree = [
 				breadcrumb: true,
 				submenu: [
 					{
-						key: 'manage-products',
-						path: `${APP_PREFIX_PATH}/products/manage-products`,
-						title: 'Manage Products',
+						key: 'manage-product',
+						path: `${APP_PREFIX_PATH}/products/manage`,
+						title: 'Add Product',
+						icon: '',
+						breadcrumb: false,
+						submenu: [],
+					},
+					{
+						key: 'product-list',
+						path: `${APP_PREFIX_PATH}/products`,
+						title: 'Product List',
 						icon: '',
 						breadcrumb: true,
 						submenu: [],
 					},
-					// {
-					// 	key: 'apps-ecommerce-addProduct',
-					// 	path: `${APP_PREFIX_PATH}/products/add-product`,
-					// 	title: 'sidenav.products.addProduct',
-					// 	icon: '',
-					// 	breadcrumb: false,
-					// 	submenu: [],
-					// },
-					// {
-					// 	key: 'apps-ecommerce-editProduct',
-					// 	path: `${APP_PREFIX_PATH}/products/edit-product/12`,
-					// 	title: 'sidenav.products.editProduct',
-					// 	icon: '',
-					// 	breadcrumb: false,
-					// 	submenu: [],
-					// },
-					// {
-					// 	key: 'apps-ecommerce-orders',
-					// 	path: `${APP_PREFIX_PATH}/products/orders`,
-					// 	title: 'sidenav.products.orders',
-					// 	icon: '',
-					// 	breadcrumb: false,
-					// 	submenu: [],
-					// },
-
-					{
-						key: 'add-products',
-						path: `${APP_PREFIX_PATH}/products/add-product`,
-						title: 'Add Products',
-						icon: '',
-						breadcrumb: false,
-						submenu: [],
-					},
-
-					{
-						key: 'edit-product',
-						path: `${APP_PREFIX_PATH}/products/edit-product/12`,
-						title: 'Edit Products',
-						icon: '',
-						breadcrumb: false,
-						submenu: [],
-					},
-
-					{
-						key: 'orders',
-						path: `${APP_PREFIX_PATH}/products/orders`,
-						title: 'Orders',
-						icon: '',
-						breadcrumb: false,
-						submenu: [],
-					},
-
 				],
-
 			},
 
-
 			{
-				key: 'supplier',
-				path: `${APP_PREFIX_PATH}/supplier`,
-				title: 'Supplier',
-				icon: SnippetsOutlined,
+				key: 'contacts',
+				path: `${APP_PREFIX_PATH}/contacts`,
+				title: 'Contacts',
+				icon: ShoppingOutlined,
 				breadcrumb: true,
 				submenu: [
 					{
-						key: 'add-supplier',
-						path: `${APP_PREFIX_PATH}/supplier/add-supplier`,
+						key: 'manage-supplier',
+						path: `${APP_PREFIX_PATH}/contacts/suppliers/manage`,
 						title: 'Add Supplier',
 						icon: '',
 						breadcrumb: false,
 						submenu: [],
 					},
-
 					{
-						key: 'manage-supplier',
-						path: `${APP_PREFIX_PATH}/supplier/manage-supplier`,
-						title: 'Manage Supplier',
-						icon: '',
-						breadcrumb: true,
-						submenu: [],
-					},
-
-
-
-				],
-			},
-
-
-
-			{
-				key: 'sales',
-				path: `${APP_PREFIX_PATH}/sales`,
-				title: 'Sales',
-				icon: LaptopOutlined,
-				breadcrumb: true,
-				submenu: [
-					{
-						key: 'add-sales',
-						path: `${APP_PREFIX_PATH}/sales/add-sales`,
-						title: 'Add Sales',
-						icon: '',
-						breadcrumb: false,
-						submenu: [],
-					},
-
-					{
-						key: 'manage-sales',
-						path: `${APP_PREFIX_PATH}/sales/manage-sales`,
-						title: 'Manage Sales',
-						icon: '',
-						breadcrumb: true,
-						submenu: [],
-					},
-
-
-				],
-			},
-			{
-				key: 'customer',
-				path: `${APP_PREFIX_PATH}/customer`,
-				title: 'Customer',
-				icon: PicLeftOutlined,
-				breadcrumb: true,
-				submenu: [
-					{
-						key: 'add-customer',
-						path: `${APP_PREFIX_PATH}/customer/add-customer`,
+						key: 'manage-customer',
+						path: `${APP_PREFIX_PATH}/contacts/customers/manage`,
 						title: 'Add Customer',
 						icon: '',
 						breadcrumb: false,
 						submenu: [],
 					},
-
 					{
-						key: 'manage-customer',
-						path: `${APP_PREFIX_PATH}/customer/manage-customer`,
-						title: 'Manage Customer',
+						key: 'contacts-list',
+						path: `${APP_PREFIX_PATH}/contacts`,
+						title: 'Contacts List',
 						icon: '',
 						breadcrumb: true,
 						submenu: [],
 					},
-
-
 				],
 			},
 
+			// {
+			// 	key: 'sales',
+			// 	path: `${APP_PREFIX_PATH}/sales`,
+			// 	title: 'Sales',
+			// 	icon: LaptopOutlined,
+			// 	breadcrumb: true,
+			// 	submenu: [
+			// 		{
+			// 			key: 'add-sales',
+			// 			path: `${APP_PREFIX_PATH}/sales/add-sales`,
+			// 			title: 'Add Sales',
+			// 			icon: '',
+			// 			breadcrumb: false,
+			// 			submenu: [],
+			// 		},
 
+			// 		{
+			// 			key: 'manage-sales',
+			// 			path: `${APP_PREFIX_PATH}/sales/manage-sales`,
+			// 			title: 'Manage Sales',
+			// 			icon: '',
+			// 			breadcrumb: true,
+			// 			submenu: [],
+			// 		},
+			// 	],
+			// },
+			// {
+			// 	key: 'customer',
+			// 	path: `${APP_PREFIX_PATH}/customer`,
+			// 	title: 'Customer',
+			// 	icon: PicLeftOutlined,
+			// 	breadcrumb: true,
+			// 	submenu: [
+			// 		{
+			// 			key: 'add-customer',
+			// 			path: `${APP_PREFIX_PATH}/customer/add-customer`,
+			// 			title: 'Add Customer',
+			// 			icon: '',
+			// 			breadcrumb: false,
+			// 			submenu: [],
+			// 		},
 
-
-
-
+			// 		{
+			// 			key: 'manage-customer',
+			// 			path: `${APP_PREFIX_PATH}/customer/manage-customer`,
+			// 			title: 'Manage Customer',
+			// 			icon: '',
+			// 			breadcrumb: true,
+			// 			submenu: [],
+			// 		},
+			// 	],
+			// },
 		],
 	},
 ];
-
-
-
-
-
-
 
 const appsNavTree = [
 	{
@@ -1125,6 +1066,6 @@ const docsNavTree = [
 	},
 ];
 
-const navigationConfig = [...dashBoardNavTree, ...appsNavTree, ...componentsNavTree, ...extraNavTree, ...docsNavTree];
+const navigationConfig = [...dashBoardNavTree];
 
 export default navigationConfig;

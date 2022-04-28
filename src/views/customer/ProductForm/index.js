@@ -41,7 +41,6 @@ const ProductForm = (props) => {
 			// const contactsData = contactsListData.filter((contacts) => contacts.id === contactId);
 			// const contacts = contactsData[0];
 			form.setFieldsValue({
-
 				name: location.state?.name,
 				phone: location.state?.phone,
 			});
@@ -65,15 +64,14 @@ const ProductForm = (props) => {
 
 	const addCustomerMutation = useMutation(
 		(payload) => {
-			return post('/contacts', { ...payload, type: "CUSTOMER" });
-
+			return post('/contacts', { ...payload, type: 'CUSTOMER' });
 		},
 		{
 			onSuccess: (response) => {
 				message.success(`Created  customer to customer list`);
 			},
 			onError: (error) => {
-				message.error(error?.response?.data?.data[0] || error.message);
+				message.error(utils.getErrorMessages(error));
 			},
 		}
 	);

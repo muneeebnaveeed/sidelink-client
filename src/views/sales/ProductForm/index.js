@@ -71,7 +71,7 @@ const ProductForm = (props) => {
 				message.success(`Created product to product list`);
 			},
 			onError: (error) => {
-				message.error(error?.response?.data?.data[0] || error.message);
+				message.error(utils.getErrorMessages(error));
 			},
 		}
 	);

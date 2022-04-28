@@ -1,5 +1,6 @@
-class Utils {
+import download from 'downloadjs';
 
+class Utils {
 	/**
 	 * Get first character from first & last sentences of a username
 	 * @param {String} name - Username
@@ -17,97 +18,107 @@ class Utils {
 	 * @return {Object} object that contained the path string
 	 */
 	static getRouteInfo(navTree, path) {
-		if( navTree.path === path ){
-		  return navTree;
+		if (navTree.path === path) {
+			return navTree;
 		}
-		let route; 
+		let route;
 		for (let p in navTree) {
-		  if( navTree.hasOwnProperty(p) && typeof navTree[p] === 'object' ) {
+			if (navTree.hasOwnProperty(p) && typeof navTree[p] === 'object') {
 				route = this.getRouteInfo(navTree[p], path);
-				if(route){
+				if (route) {
 					return route;
 				}
-		  }
+			}
 		}
 		return route;
-	}	
+	}
 
 	/**
 	 * Get accessible color contrast
 	 * @param {String} hex - Hex color code e.g '#3e82f7'
 	 * @return {String} 'dark' or 'light'
 	 */
-	static getColorContrast(hex){
-		if(!hex) {
-			return 'dark'
+	static getColorContrast(hex) {
+		if (!hex) {
+			return 'dark';
 		}
 		const threshold = 130;
 		const hRed = hexToR(hex);
 		const hGreen = hexToG(hex);
 		const hBlue = hexToB(hex);
-		function hexToR(h) {return parseInt((cutHex(h)).substring(0,2),16)}
-		function hexToG(h) {return parseInt((cutHex(h)).substring(2,4),16)}
-		function hexToB(h) {return parseInt((cutHex(h)).substring(4,6),16)}
-		function cutHex(h) {return (h.charAt(0) === '#') ? h.substring(1,7):h}
-		const cBrightness = ((hRed * 299) + (hGreen * 587) + (hBlue * 114)) / 1000;
-		if (cBrightness > threshold){
-			return 'dark'
-		} else { 
-			return 'light'
-		}	
+		function hexToR(h) {
+			return parseInt(cutHex(h).substring(0, 2), 16);
+		}
+		function hexToG(h) {
+			return parseInt(cutHex(h).substring(2, 4), 16);
+		}
+		function hexToB(h) {
+			return parseInt(cutHex(h).substring(4, 6), 16);
+		}
+		function cutHex(h) {
+			return h.charAt(0) === '#' ? h.substring(1, 7) : h;
+		}
+		const cBrightness = (hRed * 299 + hGreen * 587 + hBlue * 114) / 1000;
+		if (cBrightness > threshold) {
+			return 'dark';
+		} else {
+			return 'light';
+		}
 	}
 
 	/**
-	 * Darken or lighten a hex color 
+	 * Darken or lighten a hex color
 	 * @param {String} color - Hex color code e.g '#3e82f7'
 	 * @param {Number} percent - Percentage -100 to 100, positive for lighten, negative for darken
-	 * @return {String} Darken or lighten color 
+	 * @return {String} Darken or lighten color
 	 */
 	static shadeColor(color, percent) {
-		let R = parseInt(color.substring(1,3),16);
-		let G = parseInt(color.substring(3,5),16);
-		let B = parseInt(color.substring(5,7),16);
-		R = parseInt(R * (100 + percent) / 100);
-		G = parseInt(G * (100 + percent) / 100);
-		B = parseInt(B * (100 + percent) / 100);
-		R = (R<255)?R:255;  
-		G = (G<255)?G:255;  
-		B = (B<255)?B:255;  
-		const RR = ((R.toString(16).length === 1) ? `0${R.toString(16)}` : R.toString(16));
-		const GG = ((G.toString(16).length === 1) ? `0${G.toString(16)}` : G.toString(16));
-		const BB = ((B.toString(16).length === 1) ? `0${B.toString(16)}` : B.toString(16));
-		return `#${RR}${GG}${BB}`; 
+		let R = parseInt(color.substring(1, 3), 16);
+		let G = parseInt(color.substring(3, 5), 16);
+		let B = parseInt(color.substring(5, 7), 16);
+		R = parseInt((R * (100 + percent)) / 100);
+		G = parseInt((G * (100 + percent)) / 100);
+		B = parseInt((B * (100 + percent)) / 100);
+		R = R < 255 ? R : 255;
+		G = G < 255 ? G : 255;
+		B = B < 255 ? B : 255;
+		const RR = R.toString(16).length === 1 ? `0${R.toString(16)}` : R.toString(16);
+		const GG = G.toString(16).length === 1 ? `0${G.toString(16)}` : G.toString(16);
+		const BB = B.toString(16).length === 1 ? `0${B.toString(16)}` : B.toString(16);
+		return `#${RR}${GG}${BB}`;
 	}
 
 	/**
-	 * Convert RGBA to HEX 
+	 * Convert RGBA to HEX
 	 * @param {String} rgba - RGBA color code e.g 'rgba(197, 200, 198, .2)')'
-	 * @return {String} HEX color 
+	 * @return {String} HEX color
 	 */
 	static rgbaToHex(rgba) {
-		const trim = str => (str.replace(/^\s+|\s+$/gm,''))
-		const inParts = rgba.substring(rgba.indexOf("(")).split(","),
+		const trim = (str) => str.replace(/^\s+|\s+$/gm, '');
+		const inParts = rgba.substring(rgba.indexOf('(')).split(','),
 			r = parseInt(trim(inParts[0].substring(1)), 10),
 			g = parseInt(trim(inParts[1]), 10),
 			b = parseInt(trim(inParts[2]), 10),
 			a = parseFloat(trim(inParts[3].substring(0, inParts[3].length - 1))).toFixed(2);
-			const outParts = [
+		const outParts = [
 			r.toString(16),
 			g.toString(16),
 			b.toString(16),
-			Math.round(a * 255).toString(16).substring(0, 2)
+			Math.round(a * 255)
+				.toString(16)
+				.substring(0, 2),
 		];
 
 		outParts.forEach(function (part, i) {
 			if (part.length === 1) {
 				outParts[i] = '0' + part;
 			}
-		})
-		return (`#${outParts.join('')}`);
+		});
+		return `#${outParts.join('')}`;
 	}
 
 	/**
-	 * Returns either a positive or negative 
+	 * Returns either a positive or negative
 	 * @param {Number} number - number value
 	 * @param {any} positive - value that return when positive
 	 * @param {any} negative - value that return when negative
@@ -115,12 +126,12 @@ class Utils {
 	 */
 	static getSignNum(number, positive, negative) {
 		if (number > 0) {
-			return positive
+			return positive;
 		}
 		if (number < 0) {
-			return negative
+			return negative;
 		}
-		return null
+		return null;
 	}
 
 	/**
@@ -131,31 +142,31 @@ class Utils {
 	 * @return {any} a value minus b value
 	 */
 	static antdTableSorter(a, b, key) {
-		if(typeof a[key] === 'number' && typeof b[key] === 'number') {
-			return a[key] - b[key]
+		if (typeof a[key] === 'number' && typeof b[key] === 'number') {
+			return a[key] - b[key];
 		}
 
-		if(typeof a[key] === 'string' && typeof b[key] === 'string') {
+		if (typeof a[key] === 'string' && typeof b[key] === 'string') {
 			a = a[key].toLowerCase();
 			b = b[key].toLowerCase();
 			return a > b ? -1 : b > a ? 1 : 0;
 		}
-		return
+		return;
 	}
 
 	/**
-	 * Filter array of object 
+	 * Filter array of object
 	 * @param {Array} list - array of objects that need to filter
 	 * @param {String} key - object key target
 	 * @param {any} value  - value that excluded from filter
 	 * @return {Array} a value minus b value
 	 */
 	static filterArray(list, key, value) {
-		let data = list
-		if(list) {
-			data = list.filter(item => item[key] === value)
+		let data = list;
+		if (list) {
+			data = list.filter((item) => item[key] === value);
 		}
-		return data
+		return data;
 	}
 
 	/**
@@ -166,11 +177,11 @@ class Utils {
 	 * @return {Array} Array that removed target object
 	 */
 	static deleteArrayRow(list, key, value) {
-		let data = list
-		if(list) {
-			data = list.filter(item => item[key] !== value)
+		let data = list;
+		if (list) {
+			data = list.filter((item) => item[key] !== value);
 		}
-		return data
+		return data;
 	}
 
 	/**
@@ -190,7 +201,7 @@ class Utils {
 				}
 			}
 		};
-		list = list.filter(value => searchText(value));
+		list = list.filter((value) => searchText(value));
 		return list;
 	}
 
@@ -200,17 +211,65 @@ class Utils {
 	 * @return {Array} array of breakpoint size
 	 */
 	static getBreakPoint(screens) {
-		let breakpoints = []
+		let breakpoints = [];
 		for (const key in screens) {
 			if (screens.hasOwnProperty(key)) {
 				const element = screens[key];
 				if (element) {
-					breakpoints.push(key)
+					breakpoints.push(key);
 				}
 			}
 		}
-		return breakpoints
+		return breakpoints;
+	}
+
+	static getErrorMessages(error) {
+		if (!error) return '';
+
+		const messages = error.response?.data?.data;
+		if (messages) {
+			if (Array.isArray(messages)) return messages[0];
+			return messages;
+		}
+
+		return error.message;
+	}
+
+	static resetFlashMessage(history, location) {
+		const updatedLocationState = { ...location.state };
+		delete updatedLocationState.flashMessage;
+		history.replace({ state: updatedLocationState });
+	}
+
+	static showFlashMessage(history, location, message) {
+		const flashMessage = location.state?.flashMessage;
+		if (flashMessage) {
+			message.success(flashMessage);
+			this.resetFlashMessage(history, location);
+		}
+	}
+
+	static getDeletedSuccessfullyMessage(word, addition, length) {
+		const isSingular = length <= 1,
+			rest = ' been deleted successfully';
+		return (isSingular ? `${word} has` : `${word}${addition} have`) + rest;
+	}
+
+	static handleChangeSort(setSort) {
+		return function (pagination, filteration, sorting) {
+			setSort({ [sorting.field]: sorting.order === 'ascend' ? 1 : -1 });
+		};
+	}
+
+	static scrollToTop() {
+		window.scrollTo({ top: 0, behavior: 'smooth' });
+	}
+
+	static downloadBlob(blob, fileName) {
+		download(blob, fileName);
 	}
 }
+
+export { default as useTableUtility } from './useTableUtility';
 
 export default Utils;

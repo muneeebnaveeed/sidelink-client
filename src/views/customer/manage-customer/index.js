@@ -96,11 +96,9 @@ const ProductList = () => {
 		});
 	};
 
-
 	const deleteContactMutation = useMutation(
 		(payload) => {
 			return del(`/contacts/id/${payload}`);
-
 		},
 		{
 			onSuccess: (response, payload) => {
@@ -109,26 +107,19 @@ const ProductList = () => {
 				message.success(`Customer deleted`);
 			},
 			onError: (error) => {
-				message.error(error?.response?.data?.data[0] || error.message);
+				message.error(utils.getErrorMessages(error));
 			},
 		}
-
 	);
 
-
 	const deleteRow = (row) => {
-
-		var a = window.confirm("Are you sure to delete row ?");
+		var a = window.confirm('Are you sure to delete row ?');
 
 		if (a) {
-			alert("clicked on yes");
-
+			alert('clicked on yes');
 		} else {
-			alert("clicked on no");
+			alert('clicked on no');
 		}
-
-
-
 
 		deleteContactMutation.mutate(row._id);
 

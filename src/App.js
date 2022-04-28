@@ -14,7 +14,15 @@ const themes = {
 	light: `${process.env.PUBLIC_URL}/css/light-theme.css`,
 };
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+	defaultOptions: {
+		queries: {
+			staleTime: 60 * 1000,
+			retry: false,
+			keepPreviousData: true,
+		},
+	},
+});
 
 function App() {
 	return (

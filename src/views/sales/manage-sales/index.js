@@ -104,7 +104,7 @@ const ProductList = () => {
 				message.success(`Product deleted`);
 			},
 			onError: (error) => {
-				message.error(error?.response?.data?.data[0] || error.message);
+				message.error(utils.getErrorMessages(error));
 			},
 		}
 	);

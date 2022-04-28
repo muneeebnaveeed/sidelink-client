@@ -19,3 +19,17 @@
 .loading .ant-spin {
   color: #3e79f7;
 }
+
+iframe {
+  pointer-events: none;
+  display: none;
+}
+
+.spinner-overlay-container {
+  padding: 260px 0;
+}
+
+.bulk-import-sample-csv-button {
+  margin-top: 16px;
+  padding-left: 0 !important;
+}
