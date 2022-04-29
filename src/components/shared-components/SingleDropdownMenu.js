@@ -4,7 +4,7 @@ import Flex from './Flex';
 
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 
-const SingleDropdownMenu = ({ row, onEdit, onDelete }) => {
+const SingleDropdownMenu = ({ row, onEdit, onDelete, canDelete = true }) => {
 	return (
 		<Menu>
 			<Menu.Item onClick={() => onEdit(row)}>
@@ -13,7 +13,7 @@ const SingleDropdownMenu = ({ row, onEdit, onDelete }) => {
 					<span className="ml-2">Edit</span>
 				</Flex>
 			</Menu.Item>
-			<Menu.Item onClick={() => onDelete(row)}>
+			<Menu.Item onClick={() => onDelete(row)} disabled={!canDelete}>
 				<Flex alignItems="center">
 					<DeleteOutlined />
 					<span className="ml-2">Delete</span>

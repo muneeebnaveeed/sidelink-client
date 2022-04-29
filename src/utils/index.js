@@ -268,6 +268,26 @@ class Utils {
 	static downloadBlob(blob, fileName) {
 		download(blob, fileName);
 	}
+
+	static generateSKU(productName, variantName, index) {
+		if (productName.length < 4 || variantName.length < 4) return null;
+
+		const sku = [];
+
+		const productNameWords = productName.split(' ');
+		productNameWords.forEach((word) => sku.push(word.slice(0, 3).toUpperCase()));
+
+		const variantNameWords = variantName.split(' ');
+		variantNameWords.forEach((word) => sku.push(word.slice(0, 3).toUpperCase()));
+
+		sku.push(index + 1);
+
+		return sku.join('-');
+	}
+
+	static unshiftIds(fn, ids) {
+		fn((prev) => prev.filter((id) => !ids.includes(id)));
+	}
 }
 
 export { default as useTableUtility } from './useTableUtility';

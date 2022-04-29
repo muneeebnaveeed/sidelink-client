@@ -1,23 +1,39 @@
 const PRODUCTS_DATA = [
 	{
-		name: 'Lucinda Cannon',
-		price: 10401,
-		sku: 'velit',
+		product: {
+			name: 'Lucinda Cannon',
+		},
+		variants: [
+			{
+				name: 'Lucinda Cannon',
+				price: 10401,
+				sku: 'velit',
+			},
+		],
 	},
 	{
-		name: 'Burnett Kirk',
-		price: 9661,
-		sku: 'proident',
+		product: {
+			name: 'Lucinda Cannon',
+		},
+		variants: [
+			{
+				name: 'Lucinda Cannon',
+				price: 10401,
+				sku: 'velit',
+			},
+		],
 	},
 	{
-		name: 'Winnie Simon',
-		price: 3520,
-		sku: 'exercitation',
-	},
-	{
-		name: 'Bruce Clements',
-		price: 14857,
-		sku: 'officia',
+		product: {
+			name: 'Lucinda Cannon',
+		},
+		variants: [
+			{
+				name: 'Lucinda Cannon',
+				price: 10401,
+				sku: 'velit',
+			},
+		],
 	},
 ];
 

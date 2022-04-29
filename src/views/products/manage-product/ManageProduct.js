@@ -1,45 +1,56 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import PageHeaderAlt from 'components/layout-components/PageHeaderAlt';
-import { Form, Button, message, Space, Row, Col, Card, Input, InputNumber } from 'antd';
+import { Form, Button, message, Space, Row, Col, Card, Input, InputNumber, Divider } from 'antd';
 import Flex from 'components/shared-components/Flex';
 import { patch, post } from 'utils/server';
 import { useQueryClient, useMutation } from 'react-query';
 import utils from 'utils';
 import { useDidMount, useKey } from 'rooks';
+import { useFormik } from 'formik';
+import Utils from 'utils';
+import VariantRow from './VariantRow';
 
 const initialValues = {
 	name: '',
-	sku: '',
-	price: '',
+	variants: [
+		{
+			name: '',
+			price: '',
+			sku: '',
+		},
+	],
 };
 
-const rules = {
-	name: [
-		{
-			required: true,
-			message: 'Please enter product name',
-			type: 'string',
-			min: 4,
-		},
-	],
-	sku: [],
-	price: [
-		{
-			required: true,
-			message: 'Please enter product price',
-			type: 'number',
-			min: 1,
-		},
-	],
+const validateForm = (values) => {
+	const errors = {};
+	const { name, variants } = values;
+	if (!name) errors.name = 'Product name is required';
+	else if (name.length < 4) errors.name = 'Minimum of 4 characters are required in product name';
+
+	const variantErrors = {};
+
+	variants.forEach((variant, index) => {
+		const error = { name: '', price: '', sku: '' };
+		if (!variant.name) error.name = 'Variant name is required';
+		else if (variant.name.length < 4) error.name = 'Minimum of 4 characters are required in product name';
+
+		if (!variant.price) error.price = 'Variant price is required';
+
+		if (!variant.sku) error.sku = 'SKU is required';
+
+		if (error.name || error.price || error.sku) variantErrors[index] = error;
+	});
+
+	if (Object.keys(variantErrors).length) errors.variants = variantErrors;
+
+	return errors;
 };
 
 const AddProduct = (props) => {
 	const location = useLocation();
 	const history = useHistory();
 	const queryClient = useQueryClient();
-
-	const [form] = Form.useForm();
 
 	const editingState = useMemo(() => location.state, []);
 
@@ -70,27 +81,72 @@ const AddProduct = (props) => {
 		[addProductMutation, editProductMutation, editingState]
 	);
 
-	const onFinish = useCallback(() => {
-		form.validateFields().then((values) => {
-			mutation.mutate(values);
-		});
-	}, [form, mutation]);
-
 	useKey(['Escape'], handleDiscard);
 
 	useDidMount(() => {
-		if (editingState) form.setFieldsValue(editingState);
+		if (editingState) {
+			const { product, variants } = editingState;
+			formik.setFieldValue('name', product.name);
+			formik.setFieldValue('variants', variants);
+		}
 	});
+
+	const handleSubmit = useCallback(
+		(values) => {
+			const payload = { ...values };
+			payload.variants.forEach((v, index) => {
+				if (v.index === undefined || v.index === null) v.index = index;
+			});
+			mutation.mutate(payload);
+		},
+		[mutation]
+	);
+
+	const formik = useFormik({
+		initialValues,
+		validate: validateForm,
+		validateOnChange: false,
+		validateOnMount: false,
+		validateOnBlur: true,
+		onSubmit: handleSubmit,
+	});
+
+	const handleAddVariant = useCallback(() => {
+		const variants = [...formik.values.variants];
+		variants.push({ name: '', price: '', sku: '' });
+		formik.setFieldValue('variants', variants);
+	}, []);
+
+	const updateSKUOfAllVariants = useCallback((productName) => {
+		const variants = [...formik.values.variants];
+		let newSku = Utils.generateSKU(productName, 'abcd', 0);
+		if (newSku) {
+			newSku = newSku.split('-');
+			variants.forEach((variant) => {
+				if (!variant.sku) return;
+
+				const oldSku = variant.sku.split('-');
+				oldSku[0] = newSku[0];
+				variant.sku = oldSku.join('-');
+			});
+			formik.setFieldValue('variants', variants);
+		}
+	}, []);
+
+	const handleChangeName = useCallback((event) => {
+		const value = event.target.value;
+		updateSKUOfAllVariants(value);
+		formik.setFieldValue('name', value);
+	}, []);
 
 	return (
 		<>
 			<Form
 				layout="vertical"
-				form={form}
 				name="product_form"
 				className="ant-advanced-search-form"
-				initialValues={initialValues}
 				autoComplete="off"
+				onFinish={formik.handleSubmit}
 			>
 				<PageHeaderAlt className="border-bottom" overlap>
 					<div className="container">
@@ -101,7 +157,7 @@ const AddProduct = (props) => {
 									<Button className="mr-2" onClick={handleDiscard} disabled={mutation.isLoading}>
 										Discard
 									</Button>
-									<Button type="primary" onClick={() => onFinish()} htmlType="submit" loading={mutation.isLoading}>
+									<Button type="primary" htmlType="submit" loading={mutation.isLoading}>
 										{editingState ? 'Update Product' : 'Add Product'}
 									</Button>
 								</Space>
@@ -113,30 +169,45 @@ const AddProduct = (props) => {
 					<Row gutter={32}>
 						<Col sm={24} md={17}>
 							<Card title="Basic Info">
-								<Row>
-									<Col sm={24}>
-										<Form.Item name="name" label="Product name" rules={rules.name}>
-											<Input />
-										</Form.Item>
-									</Col>
-								</Row>
+								<Form.Item
+									required
+									label="Product name"
+									validateStatus={formik.errors.name ? 'error' : null}
+									help={formik.errors.name}
+								>
+									<Input name="name" value={formik.values.name} onChange={handleChangeName} />
+								</Form.Item>
+							</Card>
+						</Col>
+					</Row>
+					<Row>
+						<Col sm={24} md={24} lg={17}>
+							<Card
+								title="Variants & SKUs"
+								extra={
+									<Button type="link" onClick={handleAddVariant}>
+										Add Variant
+									</Button>
+								}
+							>
+								<Space direction="vertical" size="small" style={{ width: '100%' }} split={<Divider />}>
+									{formik.values.variants.map((variant, index) => {
+										const { values, errors, setFieldError, setFieldValue } = formik;
 
-								<Row gutter={32}>
-									<Col sm={24} md={12}>
-										<Form.Item name="price" label="Price" rules={rules.price}>
-											<InputNumber
-												className="w-100"
-												formatter={(value) => value.replace(/(\d+?)(?=(\d\d)+(\d)(?!\d))(\.\d+)?/g, '$1,')}
-												parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-											/>
-										</Form.Item>
-									</Col>
-									<Col sm={24} md={12}>
-										<Form.Item name="sku" label="SKU" rules={rules.sku}>
-											<Input />
-										</Form.Item>
-									</Col>
-								</Row>
+										const variantProps = {
+											index,
+											...variant,
+											productName: values.name,
+											key: `product-variant-${index}`,
+											variants: values.variants,
+											variantErrors: errors.variants,
+											setFieldValue: setFieldValue,
+											setFieldError: setFieldError,
+										};
+
+										return <VariantRow {...variantProps} />;
+									})}
+								</Space>
 							</Card>
 						</Col>
 					</Row>

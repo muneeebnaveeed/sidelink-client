@@ -11,20 +11,21 @@ export const defaultRenderer = (isPlaceholderData) => {
 };
 
 export const customRenderer = (isPlaceholderData, node) => {
-	if (!isPlaceholderData) return null;
-	return (value) => <TableSkeleton>{node(value)}</TableSkeleton>;
+	return (value, row) => <TableSkeleton loading={isPlaceholderData}>{node(value, row)}</TableSkeleton>;
 };
 
 export const actionRenderer = (isPlaceholderData, params) => (row, elm) => {
-	<TableSkeleton loading={isPlaceholderData}>
-		<div className="text-right">
-			{params.deletingIds?.includes(elm._id) ? (
-				<Spin />
-			) : (
-				<EllipsisDropdown menu={<SingleDropdownMenu row={elm} onEdit={params.onEdit} onDelete={params.onDelete} />} />
-			)}
-		</div>
-	</TableSkeleton>;
+	return (
+		<TableSkeleton loading={isPlaceholderData}>
+			<div className="text-right">
+				{params.deletingIds?.includes(elm._id) ? (
+					<Spin />
+				) : (
+					<EllipsisDropdown menu={<SingleDropdownMenu row={elm} onEdit={params.onEdit} onDelete={params.onDelete} />} />
+				)}
+			</div>
+		</TableSkeleton>
+	);
 };
 
 const getRenderers = (isPlaceholderData) => {

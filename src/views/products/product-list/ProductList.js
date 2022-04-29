@@ -1,36 +1,48 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Card, Table, Input, Button, Menu, message, Dropdown, Space, Spin, Result, Skeleton } from 'antd';
-import {
-	UploadOutlined,
-	DownOutlined,
-	EditOutlined,
-	DeleteOutlined,
-	SearchOutlined,
-	PlusCircleOutlined,
-} from '@ant-design/icons';
+import { Card, Table, Input, Button, message, Dropdown, Space, Spin, Result, Typography } from 'antd';
+import { DownOutlined, SearchOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import {
 	BulkActionDropdownMenu,
 	EllipsisDropdown,
 	Flex,
 	SingleDropdownMenu,
-	Spinner,
-	SpinnerContainer,
 	TableSkeleton,
 } from 'components/shared-components';
 
-import NumberFormat from 'react-number-format';
 import { useHistory, useLocation } from 'react-router-dom';
 import Utils, { useTableUtility } from 'utils';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { del, get } from 'utils/server';
-import BulkImport from './BulkImport.modal';
+import ManageVariant from './ManageVariant.modal';
 import { useDidMount, useKey, useToggle } from 'rooks';
 import { When } from 'react-if';
 import getRenderers from 'utils/tableRenderers';
 import PLACEHOLDER_DATA from 'utils/data';
+import useVariantList from './VariantList';
 
-const getTableColumns = ({ pagingCounter, onEdit, onDelete, deletingIds, isPlaceholderData }) => {
-	const { indexRenderer, defaultRenderer, customRenderer, actionRenderer } = getRenderers(isPlaceholderData);
+const productActionRenderer = (isPlaceholderData, params) => (row, elm) => {
+	return (
+		<TableSkeleton loading={isPlaceholderData}>
+			<div className="text-right">
+				{params.deletingIds?.includes(elm._id) ? (
+					<Spin />
+				) : (
+					<Space>
+						<Button type="link" onClick={() => params.onAddVariant(elm)}>
+							Add Variant
+						</Button>
+						<EllipsisDropdown
+							menu={<SingleDropdownMenu row={elm} onEdit={params.onEdit} onDelete={params.onDelete} />}
+						/>
+					</Space>
+				)}
+			</div>
+		</TableSkeleton>
+	);
+};
+
+const getTableColumns = ({ pagingCounter, onEdit, onDelete, deletingIds, isPlaceholderData, onAddVariant }) => {
+	const { indexRenderer, customRenderer } = getRenderers(isPlaceholderData);
 
 	return [
 		{
@@ -40,46 +52,19 @@ const getTableColumns = ({ pagingCounter, onEdit, onDelete, deletingIds, isPlace
 		},
 		{
 			title: 'Product',
-			dataIndex: 'name',
-			sorter: true,
-			render: defaultRenderer(),
+			dataIndex: ['product', 'name'],
+			render: customRenderer((name, row) => {
+				return (
+					<Flex flexDirection="column">
+						<Typography.Text strong>{row.product.name}</Typography.Text>
+						<Typography.Text type="secondary">{row.variants.length} VARIANTS</Typography.Text>
+					</Flex>
+				);
+			}),
 		},
 		{
-			title: 'Price',
-			dataIndex: 'price',
-			sorter: true,
-			render: customRenderer((price) => (
-				<div>
-					<NumberFormat
-						displayType={'text'}
-						value={price}
-						prefix={'PKR '}
-						thousandSeparator
-						thousandsGroupStyle={'lakh'}
-					/>
-				</div>
-			)),
-		},
-		{
-			title: 'SKU',
-			dataIndex: 'sku',
-			sorter: true,
-			render: defaultRenderer(),
-		},
-		{
-			title: 'Action',
-			fixed: 'right',
 			width: 150,
-			dataIndex: 'actions',
-			render: actionRenderer((row, elm) => (
-				<div className="text-right">
-					{deletingIds.includes(elm._id) ? (
-						<Spin />
-					) : (
-						<EllipsisDropdown menu={<SingleDropdownMenu row={elm} onEdit={onEdit} onDelete={onDelete} />} />
-					)}
-				</div>
-			)),
+			render: productActionRenderer(isPlaceholderData, { deletingIds, onEdit, onDelete, onAddVariant }),
 		},
 	];
 };
@@ -90,10 +75,18 @@ const ProductList = () => {
 	const queryClient = useQueryClient();
 	const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 	const [deletingIds, setDeletingIds] = useState([]);
+	const [expandedProduct, setExpandedProduct] = useState(null);
 
 	const { page, limit, sort, search } = useTableUtility();
 
 	const [isModal, toggleModal] = useToggle();
+	const [modalData, setModalData] = useState(null);
+
+	const renderVariantList = useVariantList({
+		modalData: { value: modalData, set: setModalData },
+		expandedProduct: { value: expandedProduct, set: setExpandedProduct },
+		toggleModal,
+	});
 
 	const apiParams = useMemo(
 		() => ({ page: page.value, limit: limit.value, sort: sort.value, search: search.debounced }),
@@ -112,37 +105,50 @@ const ProductList = () => {
 	const deleteProductMutation = useMutation((payload) => del(`/products/id/${payload}`), {
 		onSuccess: (response, payload) => {
 			const ids = payload.split(',');
-			setSelectedRowKeys((prev) => prev.filter((id) => !ids.includes(id)));
-			setDeletingIds((prev) => prev.filter((id) => !ids.includes(id)));
 			message.success(Utils.getDeletedSuccessfullyMessage('Product', 's', ids.length));
 			queryClient.invalidateQueries('products');
 		},
 		onError: (error) => {
 			message.error(Utils.getErrorMessages(error));
 		},
+		onSettled: (data, error, payload) => {
+			const ids = payload.split(',');
+			Utils.unshiftIds(setSelectedRowKeys, ids);
+			Utils.unshiftIds(setDeletingIds, ids);
+		},
 	});
 
 	const deleteAllMutation = useMutation(() => del(`/products/all`), {
 		onSuccess: () => {
-			setSelectedRowKeys([]);
-			setDeletingIds([]);
 			message.success('Products have been deleted successfully');
 			queryClient.invalidateQueries('products');
 		},
 		onError: (error) => {
 			message.error(Utils.getErrorMessages(error));
 		},
+		onSettled: () => {
+			setSelectedRowKeys([]);
+			setDeletingIds([]);
+		},
 	});
 
 	const handleAddProduct = useCallback(() => {
-		history.push(`/app/products/manage`);
-	}, [history]);
+		if (!isModal) history.push(`/app/products/manage`);
+	}, [history, isModal]);
 
 	const handleEdit = useCallback(
 		(row) => {
 			history.push('/app/products/manage', row);
 		},
 		[history]
+	);
+
+	const handleAddVariant = useCallback(
+		(row) => {
+			setModalData({ product: row });
+			toggleModal();
+		},
+		[toggleModal]
 	);
 
 	const handleBulkDelete = useCallback(() => {
@@ -214,6 +220,26 @@ const ProductList = () => {
 		[getCheckboxProps, selectedRowKeys]
 	);
 
+	const handleExpandProduct = (expanded, row) => {
+		if (expanded) setExpandedProduct(row);
+		else setExpandedProduct(null);
+	};
+
+	const getExpandedRowKeys = useCallback(() => {
+		const expandedProductId = expandedProduct?._id;
+		return expandedProductId ? [expandedProductId] : [];
+	}, [expandedProduct?._id]);
+
+	const tableExpandable = useMemo(
+		() => ({
+			expandedRowRender: renderVariantList(query.isPlaceholderData),
+			onExpand: handleExpandProduct,
+			rowExpandable: () => !query.isPlaceholderData,
+			expandedRowKeys: getExpandedRowKeys(),
+		}),
+		[renderVariantList, query.isPlaceholderData, getExpandedRowKeys]
+	);
+
 	const tableProps = useMemo(
 		() => ({
 			rowKey: '_id',
@@ -222,10 +248,12 @@ const ProductList = () => {
 			dataSource: query.data?.docs,
 			rowSelection: tableRowSelection,
 			onChange: Utils.handleChangeSort(sort.set),
+			expandable: tableExpandable,
 			columns: getTableColumns({
 				pagingCounter: query.data?.pagingCounter,
 				onEdit: handleEdit,
 				onDelete: handleDelete,
+				onAddVariant: handleAddVariant,
 				deletingIds,
 				isPlaceholderData: query.isPlaceholderData,
 			}),
@@ -233,6 +261,7 @@ const ProductList = () => {
 		[
 			deleteProductMutation.isLoading,
 			deletingIds,
+			handleAddVariant,
 			handleDelete,
 			handleEdit,
 			query.data?.docs,
@@ -240,6 +269,7 @@ const ProductList = () => {
 			query.isLoading,
 			query.isPlaceholderData,
 			sort.set,
+			tableExpandable,
 			tablePagination,
 			tableRowSelection,
 		]
@@ -274,7 +304,6 @@ const ProductList = () => {
 							<Dropdown
 								overlay={
 									<BulkActionDropdownMenu
-										onImportCSV={toggleModal}
 										onDelete={handleBulkDelete}
 										canDelete={selectedRowKeys.length && !deleteAllMutation.isLoading}
 										onDeleteAll={deleteAllMutation.mutate}
@@ -311,7 +340,7 @@ const ProductList = () => {
 					</div>
 				</When>
 			</Card>
-			<BulkImport visible={{ set: toggleModal, value: isModal }} />
+			<ManageVariant visible={{ set: toggleModal, value: isModal }} data={{ set: setModalData, value: modalData }} />
 		</>
 	);
 };

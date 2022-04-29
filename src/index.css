@@ -33,3 +33,16 @@ iframe {
   margin-top: 16px;
   padding-left: 0 !important;
 }
+
+.delete-form-list-item-button {
+  margin-top: 28px;
+  /* font-size: 22px; */
+}
+
+.product-variant-form-item {
+  margin-bottom: 10px !important;
+}
+
+.hidden {
+  display: none;
+}

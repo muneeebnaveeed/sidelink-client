@@ -7,12 +7,14 @@ import { UploadOutlined, DeleteOutlined } from '@ant-design/icons';
 const BulkActionDropdownMenu = ({ onImportCSV, onDelete, canDelete, onDeleteAll, canDeleteAll }) => {
 	return (
 		<Menu>
-			<Menu.Item onClick={onImportCSV}>
-				<Flex alignItems="center">
-					<UploadOutlined />
-					<span className="ml-2">Import CSV</span>
-				</Flex>
-			</Menu.Item>
+			{!!onImportCSV && (
+				<Menu.Item onClick={onImportCSV}>
+					<Flex alignItems="center">
+						<UploadOutlined />
+						<span className="ml-2">Import CSV</span>
+					</Flex>
+				</Menu.Item>
+			)}
 			<Menu.Item onClick={onDeleteAll} disabled={!canDeleteAll}>
 				<Flex alignItems="center">
 					<DeleteOutlined />
