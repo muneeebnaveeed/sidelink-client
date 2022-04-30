@@ -270,7 +270,7 @@ class Utils {
 	}
 
 	static generateSKU(productName, variantName, index) {
-		if (productName.length < 4 || variantName.length < 4) return null;
+		if (productName.length < 3 || variantName.length < 3) return null;
 
 		const sku = [];
 

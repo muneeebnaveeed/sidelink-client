@@ -267,6 +267,32 @@ const dashBoardNavTree = [
 				],
 			},
 
+			{
+				key: 'stock',
+				path: `${APP_PREFIX_PATH}/stock`,
+				title: 'Stock',
+				icon: ShoppingOutlined,
+				breadcrumb: true,
+				submenu: [
+					{
+						key: 'manage-stock',
+						path: `${APP_PREFIX_PATH}/stock/manage`,
+						title: 'Add Stock',
+						icon: '',
+						breadcrumb: false,
+						submenu: [],
+					},
+					{
+						key: 'stock-list',
+						path: `${APP_PREFIX_PATH}/stock`,
+						title: 'Stock List',
+						icon: '',
+						breadcrumb: true,
+						submenu: [],
+					},
+				],
+			},
+
 			// {
 			// 	key: 'sales',
 			// 	path: `${APP_PREFIX_PATH}/sales`,

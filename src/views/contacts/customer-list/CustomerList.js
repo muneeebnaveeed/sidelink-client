@@ -15,6 +15,7 @@ import {
 	SingleDropdownMenu,
 	Spinner,
 	SpinnerContainer,
+	TableSkeleton,
 } from 'components/shared-components';
 
 import NumberFormat from 'react-number-format';
@@ -27,6 +28,22 @@ import { useDidMount, useEffectOnceWhen, useKey, useToggle } from 'rooks';
 import { When } from 'react-if';
 import getRenderers from 'utils/tableRenderers';
 import PLACEHOLDER_DATA from 'utils/data';
+
+const customActionRenderer = (isPlaceholderData, params) => (row, elm) => {
+	if (elm.name === 'Walk-in') return null;
+
+	return (
+		<TableSkeleton loading={isPlaceholderData}>
+			<div className="text-right">
+				{params.deletingIds?.includes(elm._id) ? (
+					<Spin />
+				) : (
+					<EllipsisDropdown menu={<SingleDropdownMenu row={elm} onEdit={params.onEdit} onDelete={params.onDelete} />} />
+				)}
+			</div>
+		</TableSkeleton>
+	);
+};
 
 const getTableColumns = ({ pagingCounter, onEdit, onDelete, deletingIds, isPlaceholderData }) => {
 	const { indexRenderer, defaultRenderer, actionRenderer } = getRenderers(isPlaceholderData);
@@ -48,11 +65,9 @@ const getTableColumns = ({ pagingCounter, onEdit, onDelete, deletingIds, isPlace
 			render: defaultRenderer(),
 		},
 		{
-			title: 'Action',
 			fixed: 'right',
 			width: 150,
-			dataIndex: 'actions',
-			render: actionRenderer({ deletingIds, onEdit, onDelete }),
+			render: customActionRenderer(isPlaceholderData, { deletingIds, onEdit, onDelete }),
 		},
 	];
 };
@@ -85,13 +100,16 @@ const CustomerList = () => {
 	const deleteMutation = useMutation((payload) => del(`/customers/id/${payload}`), {
 		onSuccess: (response, payload) => {
 			const ids = payload.split(',');
-			setSelectedRowKeys((prev) => prev.filter((id) => !ids.includes(id)));
-			setDeletingIds((prev) => prev.filter((id) => !ids.includes(id)));
 			message.success(Utils.getDeletedSuccessfullyMessage('Customer', 's', ids.length));
 			queryClient.invalidateQueries('customers');
 		},
 		onError: (error) => {
 			message.error(Utils.getErrorMessages(error));
+		},
+		onSettled: (data, error, payload) => {
+			const ids = payload.split(',');
+			Utils.unshiftIds(setSelectedRowKeys, ids);
+			Utils.unshiftIds(setDeletingIds, ids);
 		},
 	});
 
@@ -126,6 +144,12 @@ const CustomerList = () => {
 		deleteMutation.mutate(ids);
 		setDeletingIds([...selectedRowKeys]);
 	}, [deleteMutation, selectedRowKeys]);
+
+	const handleDeleteAll = useCallback(() => {
+		var confirm = window.confirm(`Are you sure you want to delete all stock?`);
+		if (!confirm) return;
+		deleteAllMutation.mutate();
+	}, [deleteAllMutation]);
 
 	const handleDelete = useCallback(
 		(row) => {
@@ -170,7 +194,7 @@ const CustomerList = () => {
 
 	const getCheckboxProps = useCallback(
 		(row) => ({
-			disabled: deletingIds.includes(row._id) || query.isPlaceholderData,
+			disabled: deletingIds.includes(row._id) || query.isPlaceholderData || row.name === 'Walk-in',
 			name: row.name,
 		}),
 		[deletingIds, query.isPlaceholderData]
@@ -216,10 +240,6 @@ const CustomerList = () => {
 		]
 	);
 
-	useDidMount(() => {
-		Utils.showFlashMessage(history, location, message);
-	});
-
 	useEffect(Utils.scrollToTop, [page, limit]);
 
 	useEffect(() => {
@@ -246,7 +266,7 @@ const CustomerList = () => {
 										onImportCSV={toggleModal}
 										onDelete={handleBulkDelete}
 										canDelete={selectedRowKeys.length && !deleteAllMutation.isLoading}
-										onDeleteAll={deleteAllMutation.mutate}
+										onDeleteAll={handleDeleteAll}
 										canDeleteAll={query.data?.docs.length && !selectedRowKeys.length && !deletingIds.length}
 									/>
 								}

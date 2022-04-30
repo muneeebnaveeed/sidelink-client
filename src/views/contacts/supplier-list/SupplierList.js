@@ -1,21 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Card, Table, Input, Button, Menu, message, Dropdown, Space, Spin, Result } from 'antd';
-import {
-	UploadOutlined,
-	DownOutlined,
-	EditOutlined,
-	DeleteOutlined,
-	SearchOutlined,
-	PlusCircleOutlined,
-} from '@ant-design/icons';
-import {
-	BulkActionDropdownMenu,
-	EllipsisDropdown,
-	Flex,
-	SingleDropdownMenu,
-	Spinner,
-	SpinnerContainer,
-} from 'components/shared-components';
+import { DownOutlined, SearchOutlined, PlusCircleOutlined } from '@ant-design/icons';
+import { BulkActionDropdownMenu, Flex } from 'components/shared-components';
 
 import NumberFormat from 'react-number-format';
 import { useHistory, useLocation } from 'react-router-dom';
@@ -48,10 +34,8 @@ const getTableColumns = ({ pagingCounter, onEdit, onDelete, deletingIds, isPlace
 			render: defaultRenderer(),
 		},
 		{
-			title: 'Action',
 			fixed: 'right',
 			width: 150,
-			dataIndex: 'actions',
 			render: actionRenderer({ deletingIds, onEdit, onDelete }),
 		},
 	];
@@ -59,7 +43,6 @@ const getTableColumns = ({ pagingCounter, onEdit, onDelete, deletingIds, isPlace
 
 const SupplierList = () => {
 	const history = useHistory();
-	const location = useLocation();
 	const queryClient = useQueryClient();
 	const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 	const [deletingIds, setDeletingIds] = useState([]);
@@ -85,13 +68,16 @@ const SupplierList = () => {
 	const deleteMutation = useMutation((payload) => del(`/suppliers/id/${payload}`), {
 		onSuccess: (response, payload) => {
 			const ids = payload.split(',');
-			setSelectedRowKeys((prev) => prev.filter((id) => !ids.includes(id)));
-			setDeletingIds((prev) => prev.filter((id) => !ids.includes(id)));
 			message.success(Utils.getDeletedSuccessfullyMessage('Supplier', 's', ids.length));
 			queryClient.invalidateQueries('suppliers');
 		},
 		onError: (error) => {
 			message.error(Utils.getErrorMessages(error));
+		},
+		onSettled: (data, error, payload) => {
+			const ids = payload.split(',');
+			Utils.unshiftIds(setSelectedRowKeys, ids);
+			Utils.unshiftIds(setDeletingIds, ids);
 		},
 	});
 
@@ -126,6 +112,12 @@ const SupplierList = () => {
 		deleteMutation.mutate(ids);
 		setDeletingIds([...selectedRowKeys]);
 	}, [deleteMutation, selectedRowKeys]);
+
+	const handleDeleteAll = useCallback(() => {
+		var confirm = window.confirm(`Are you sure you want to delete all stock?`);
+		if (!confirm) return;
+		deleteAllMutation.mutate();
+	}, [deleteAllMutation]);
 
 	const handleDelete = useCallback(
 		(row) => {
@@ -216,10 +208,6 @@ const SupplierList = () => {
 		]
 	);
 
-	useDidMount(() => {
-		Utils.showFlashMessage(history, location, message);
-	});
-
 	useEffect(Utils.scrollToTop, [page, limit]);
 
 	useEffect(() => {
@@ -246,7 +234,7 @@ const SupplierList = () => {
 										onImportCSV={toggleModal}
 										onDelete={handleBulkDelete}
 										canDelete={selectedRowKeys.length && !deleteAllMutation.isLoading}
-										onDeleteAll={deleteAllMutation.mutate}
+										onDeleteAll={handleDeleteAll}
 										canDeleteAll={query.data?.docs.length && !selectedRowKeys.length && !deletingIds.length}
 									/>
 								}

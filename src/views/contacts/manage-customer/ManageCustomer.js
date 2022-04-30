@@ -33,9 +33,9 @@ const ManageCustomer = (props) => {
 
 	const editingState = useMemo(() => location.state, [location.state]);
 
-	const handleDiscard = useCallback(() => history.push('/app/contacts'), [history]);
+	const handleDiscard = useCallback(history.goBack, []);
 
-	const addMutation = useMutation((payload) => post('/contacts', payload), {
+	const addMutation = useMutation((payload) => post('/customers', payload), {
 		onSuccess: async () => {
 			await queryClient.invalidateQueries('customers');
 			history.push('/app/contacts', { flashMessage: 'Customer has been added successfully' });
@@ -45,7 +45,7 @@ const ManageCustomer = (props) => {
 		},
 	});
 
-	const editProductMutation = useMutation((payload) => patch(`/contacts/id/${editingState._id}`, payload), {
+	const editProductMutation = useMutation((payload) => patch(`/customers/id/${editingState._id}`, payload), {
 		onSuccess: async () => {
 			await queryClient.invalidateQueries('customers');
 			history.push('/app/contacts', { flashMessage: 'Customer has been updated successfully' });
@@ -89,7 +89,7 @@ const ManageCustomer = (props) => {
 							<Flex alignItems="center">
 								<Space>
 									<Button className="mr-2" onClick={handleDiscard} disabled={mutation.isLoading}>
-										Discard
+										Back
 									</Button>
 									<Button type="primary" onClick={() => onFinish()} htmlType="submit" loading={mutation.isLoading}>
 										{editingState ? 'Update Customer' : 'Add Customer'}

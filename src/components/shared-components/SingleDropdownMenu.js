@@ -13,12 +13,14 @@ const SingleDropdownMenu = ({ row, onEdit, onDelete, canDelete = true }) => {
 					<span className="ml-2">Edit</span>
 				</Flex>
 			</Menu.Item>
-			<Menu.Item onClick={() => onDelete(row)} disabled={!canDelete}>
-				<Flex alignItems="center">
-					<DeleteOutlined />
-					<span className="ml-2">Delete</span>
-				</Flex>
-			</Menu.Item>
+			{!!onDelete && (
+				<Menu.Item onClick={() => onDelete(row)} disabled={!canDelete}>
+					<Flex alignItems="center">
+						<DeleteOutlined />
+						<span className="ml-2">Delete</span>
+					</Flex>
+				</Menu.Item>
+			)}
 		</Menu>
 	);
 };

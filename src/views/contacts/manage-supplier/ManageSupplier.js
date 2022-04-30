@@ -33,7 +33,7 @@ const ManageSupplier = (props) => {
 
 	const editingState = useMemo(() => location.state, [location.state]);
 
-	const handleDiscard = useCallback(() => history.push('/app/contacts'), [history]);
+	const handleDiscard = useCallback(history.goBack, []);
 
 	const addMutation = useMutation((payload) => post('/contacts', payload), {
 		onSuccess: async () => {
@@ -89,7 +89,7 @@ const ManageSupplier = (props) => {
 							<Flex alignItems="center">
 								<Space>
 									<Button className="mr-2" onClick={handleDiscard} disabled={mutation.isLoading}>
-										Discard
+										Back
 									</Button>
 									<Button type="primary" onClick={() => onFinish()} htmlType="submit" loading={mutation.isLoading}>
 										{editingState ? 'Update Supplier' : 'Add Supplier'}

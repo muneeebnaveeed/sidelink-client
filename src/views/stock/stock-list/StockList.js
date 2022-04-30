@@ -13,7 +13,7 @@ import { useHistory, useLocation } from 'react-router-dom';
 import Utils, { useTableUtility } from 'utils';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { del, get } from 'utils/server';
-import ManageVariant from './ManageVariant.modal';
+import AddStock from './AddStock.modal';
 import { useDidMount, useKey, useToggle } from 'rooks';
 import { When } from 'react-if';
 import getRenderers from 'utils/tableRenderers';
@@ -28,9 +28,14 @@ const productActionRenderer = (isPlaceholderData, params) => (row, elm) => {
 					<Spin />
 				) : (
 					<Space>
-						<Button type="link" onClick={() => params.onAddVariant(elm)}>
-							Add Variant
-						</Button>
+						<Flex>
+							<Button type="link" onClick={() => params.onAddOneStock(elm)}>
+								Add
+							</Button>
+							<Button type="link" onClick={() => params.onConsumeOneStock(elm)}>
+								Consume
+							</Button>
+						</Flex>
 						<EllipsisDropdown
 							menu={<SingleDropdownMenu row={elm} onEdit={params.onEdit} onDelete={params.onDelete} />}
 						/>
@@ -41,7 +46,15 @@ const productActionRenderer = (isPlaceholderData, params) => (row, elm) => {
 	);
 };
 
-const getTableColumns = ({ pagingCounter, onEdit, onDelete, deletingIds, isPlaceholderData, onAddVariant }) => {
+const getTableColumns = ({
+	pagingCounter,
+	onEdit,
+	onDelete,
+	deletingIds,
+	isPlaceholderData,
+	onAddOneStock,
+	onConsumeOneStock,
+}) => {
 	const { indexRenderer, customRenderer } = getRenderers(isPlaceholderData);
 
 	return [
@@ -64,12 +77,18 @@ const getTableColumns = ({ pagingCounter, onEdit, onDelete, deletingIds, isPlace
 		},
 		{
 			width: 150,
-			render: productActionRenderer(isPlaceholderData, { deletingIds, onEdit, onDelete, onAddVariant }),
+			render: productActionRenderer(isPlaceholderData, {
+				deletingIds,
+				onEdit,
+				onDelete,
+				onAddOneStock,
+				onConsumeOneStock,
+			}),
 		},
 	];
 };
 
-const ProductList = () => {
+const StockList = () => {
 	const history = useHistory();
 	const location = useLocation();
 	const queryClient = useQueryClient();
@@ -94,19 +113,18 @@ const ProductList = () => {
 	);
 
 	const query = useQuery(
-		['products', apiParams],
+		['stock', apiParams],
 		() =>
-			get('/products', {
+			get('/stock', {
 				params: apiParams,
 			}),
-		{ placeholderData: PLACEHOLDER_DATA.PRODUCTS }
+		{ placeholderData: PLACEHOLDER_DATA.STOCK }
 	);
 
-	const deleteProductMutation = useMutation((payload) => del(`/products/id/${payload}`), {
-		onSuccess: (response, payload) => {
-			const ids = payload.split(',');
-			message.success(Utils.getDeletedSuccessfullyMessage('Product', 's', ids.length));
-			queryClient.invalidateQueries('products');
+	const deleteProductMutation = useMutation((payload) => del(`/stock/id/${payload}`), {
+		onSuccess: () => {
+			message.success('Stock has been deleted successfully');
+			queryClient.invalidateQueries('stock');
 		},
 		onError: (error) => {
 			message.error(Utils.getErrorMessages(error));
@@ -118,10 +136,10 @@ const ProductList = () => {
 		},
 	});
 
-	const deleteAllMutation = useMutation(() => del(`/products/all`), {
+	const deleteAllMutation = useMutation(() => del(`/stock/all`), {
 		onSuccess: () => {
-			message.success('Products have been deleted successfully');
-			queryClient.invalidateQueries('products');
+			message.success('Stock has been deleted successfully');
+			queryClient.invalidateQueries('stock');
 		},
 		onError: (error) => {
 			message.error(Utils.getErrorMessages(error));
@@ -132,27 +150,33 @@ const ProductList = () => {
 		},
 	});
 
-	const handleAddProduct = useCallback(() => {
-		if (!isModal) history.push(`/app/products/manage`);
+	const handleAddStock = useCallback(() => {
+		if (!isModal) history.push(`/app/stock/manage`);
 	}, [history, isModal]);
 
 	const handleEdit = useCallback(
 		(row) => {
-			history.push('/app/products/manage', { product: row });
+			history.push('/app/stock/manage', { ...row, isEditing: true });
 		},
 		[history]
 	);
 
-	const handleAddVariant = useCallback(
+	const handleAddOneStock = useCallback(
 		(row) => {
-			setModalData({ product: row });
-			toggleModal();
+			history.push('/app/stock/manage', row);
 		},
-		[toggleModal]
+		[history]
+	);
+
+	const handleConsumeOneStock = useCallback(
+		(row) => {
+			history.push('/app/stock/manage', { ...row, isConsuming: true });
+		},
+		[history]
 	);
 
 	const handleBulkDelete = useCallback(() => {
-		var confirm = window.confirm(`Are you sure you want to delete selected products?`);
+		var confirm = window.confirm(`Are you sure you want to delete selected stock?`);
 		if (!confirm) return;
 
 		const ids = selectedRowKeys.join(',');
@@ -168,7 +192,7 @@ const ProductList = () => {
 
 	const handleDelete = useCallback(
 		(row) => {
-			var confirm = window.confirm('Are you sure to delete the product?');
+			var confirm = window.confirm('Are you sure to delete the stock?');
 			if (!confirm) return;
 
 			const id = row._id;
@@ -259,7 +283,8 @@ const ProductList = () => {
 				pagingCounter: query.data?.pagingCounter,
 				onEdit: handleEdit,
 				onDelete: handleDelete,
-				onAddVariant: handleAddVariant,
+				onAddOneStock: handleAddOneStock,
+				onConsumeOneStock: handleConsumeOneStock,
 				deletingIds,
 				isPlaceholderData: query.isPlaceholderData,
 			}),
@@ -267,7 +292,7 @@ const ProductList = () => {
 		[
 			deleteProductMutation.isLoading,
 			deletingIds,
-			handleAddVariant,
+			handleAddOneStock,
 			handleDelete,
 			handleEdit,
 			query.data?.docs,
@@ -287,7 +312,7 @@ const ProductList = () => {
 
 	useEffect(Utils.scrollToTop, [page, limit]);
 
-	useKey(['Enter'], handleAddProduct);
+	useKey(['Enter'], handleAddStock);
 
 	useEffect(() => {
 		if (query.data?.hasNextPage) {
@@ -322,8 +347,8 @@ const ProductList = () => {
 									Bulk <DownOutlined />
 								</Button>
 							</Dropdown>
-							<Button onClick={handleAddProduct} type="primary" icon={<PlusCircleOutlined />} block>
-								Add product
+							<Button onClick={handleAddStock} type="primary" icon={<PlusCircleOutlined />} block>
+								Add Stock
 							</Button>
 						</Space>
 					</Flex>
@@ -331,7 +356,7 @@ const ProductList = () => {
 				<When condition={query.isError}>
 					<Result
 						status={500}
-						title="Oops.. We're having trouble fetching products!"
+						title="Oops.. We're having trouble fetching stock!"
 						subTitle={Utils.getErrorMessages(query.error)}
 						extra={
 							<Button type="danger" onClick={query.refetch}>
@@ -346,9 +371,9 @@ const ProductList = () => {
 					</div>
 				</When>
 			</Card>
-			<ManageVariant visible={{ set: toggleModal, value: isModal }} data={{ set: setModalData, value: modalData }} />
+			<AddStock visible={{ set: toggleModal, value: isModal }} data={{ set: setModalData, value: modalData }} />
 		</>
 	);
 };
 
-export default ProductList;
+export default StockList;

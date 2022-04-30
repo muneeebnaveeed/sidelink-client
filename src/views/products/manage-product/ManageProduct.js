@@ -26,14 +26,14 @@ const validateForm = (values) => {
 	const errors = {};
 	const { name, variants } = values;
 	if (!name) errors.name = 'Product name is required';
-	else if (name.length < 4) errors.name = 'Minimum of 4 characters are required in product name';
+	else if (name.length < 3) errors.name = 'Minimum of 3 characters are required in product name';
 
 	const variantErrors = {};
 
 	variants.forEach((variant, index) => {
 		const error = { name: '', price: '', sku: '' };
 		if (!variant.name) error.name = 'Variant name is required';
-		else if (variant.name.length < 4) error.name = 'Minimum of 4 characters are required in product name';
+		else if (variant.name.length < 3) error.name = 'Minimum of 3 characters are required in product name';
 
 		if (!variant.price) error.price = 'Variant price is required';
 
@@ -53,20 +53,21 @@ const AddProduct = (props) => {
 	const queryClient = useQueryClient();
 
 	const editingState = useMemo(() => location.state, []);
+	const productState = useMemo(() => editingState.product, []);
 
-	const handleDiscard = useCallback(() => history.push('/app/products'), []);
+	const handleDiscard = useCallback(history.goBack, []);
 
 	const addProductMutation = useMutation((payload) => post('/products', payload), {
 		onSuccess: async () => {
 			await queryClient.invalidateQueries('products');
-			history.push('/app/products', { flashMessage: 'Product has been added successfully' });
+			history.push(editingState.from || '/app/products', { flashMessage: 'Product has been added successfully' });
 		},
 		onError: (error) => {
 			message.error(utils.getErrorMessages(error));
 		},
 	});
 
-	const editProductMutation = useMutation((payload) => patch(`/products/id/${editingState._id}`, payload), {
+	const editProductMutation = useMutation((payload) => patch(`/products/id/${productState._id}`, payload), {
 		onSuccess: async () => {
 			await queryClient.invalidateQueries('products');
 			history.push('/app/products', { flashMessage: 'Product has been updated successfully' });
@@ -77,15 +78,15 @@ const AddProduct = (props) => {
 	});
 
 	const mutation = useMemo(
-		() => (editingState ? editProductMutation : addProductMutation),
-		[addProductMutation, editProductMutation, editingState]
+		() => (productState ? editProductMutation : addProductMutation),
+		[addProductMutation, editProductMutation, productState]
 	);
 
 	useKey(['Escape'], handleDiscard);
 
 	useDidMount(() => {
-		if (editingState) {
-			const { product, variants } = editingState;
+		if (productState) {
+			const { product, variants } = productState;
 			formik.setFieldValue('name', product.name);
 			formik.setFieldValue('variants', variants);
 		}
@@ -151,14 +152,14 @@ const AddProduct = (props) => {
 				<PageHeaderAlt className="border-bottom" overlap>
 					<div className="container">
 						<Flex className="py-2" mobileFlex={false} justifyContent="between" alignItems="center">
-							<h2 className="mb-0">{editingState ? 'Update Product' : `Add New Product`}</h2>
+							<h2 className="mb-0">{productState ? 'Update Product' : `Add New Product`}</h2>
 							<Flex alignItems="center">
 								<Space>
 									<Button className="mr-2" onClick={handleDiscard} disabled={mutation.isLoading}>
-										Discard
+										Back
 									</Button>
 									<Button type="primary" htmlType="submit" loading={mutation.isLoading}>
-										{editingState ? 'Update Product' : 'Add Product'}
+										{productState ? 'Update Product' : 'Add Product'}
 									</Button>
 								</Space>
 							</Flex>

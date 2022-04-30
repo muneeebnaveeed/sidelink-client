@@ -105,11 +105,9 @@ const ManageVariant = ({ visible, data }) => {
 	);
 
 	const getModalTitle = useCallback(() => {
-		const productName = productState?.product.name;
-		if (variantState) return `Edit Variant - ${productName} - ${variantState.name}`;
-
-		return `Add Variant - ${productName}`;
-	}, [productState?.product.name, variantState]);
+		if (variantState) return `Edit Variant - ${variantState.name}`;
+		return `Add Variant`;
+	}, [variantState]);
 
 	useEffect(() => {
 		if (visible.value && variantState) {
@@ -140,6 +138,13 @@ const ManageVariant = ({ visible, data }) => {
 				onFinish={formik.handleSubmit}
 			>
 				<button className="hidden" type="submit" />
+				<Row>
+					<Col xs={24}>
+						<Form.Item required label="Product">
+							<Input size="small" value={productState?.product.name} disabled />
+						</Form.Item>
+					</Col>
+				</Row>
 				<Row>
 					<Col xs={24}>
 						<Form.Item

@@ -70,6 +70,7 @@ const PLACEHOLDER_DATA = {
 	PRODUCTS: generatePlaceholderData(PRODUCTS_DATA),
 	SUPPLIERS: generatePlaceholderData(SUPPLIERS_DATA),
 	CUSTOMERS: generatePlaceholderData(SUPPLIERS_DATA),
+	STOCK: generatePlaceholderData(PRODUCTS_DATA),
 };
 
 export default PLACEHOLDER_DATA;
