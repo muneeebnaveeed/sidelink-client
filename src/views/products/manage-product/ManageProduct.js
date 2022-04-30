@@ -53,21 +53,21 @@ const AddProduct = (props) => {
 	const queryClient = useQueryClient();
 
 	const editingState = useMemo(() => location.state, []);
-	const productState = useMemo(() => editingState.product, []);
+	const productState = useMemo(() => editingState?.product, []);
 
 	const handleDiscard = useCallback(history.goBack, []);
 
 	const addProductMutation = useMutation((payload) => post('/products', payload), {
 		onSuccess: async () => {
-			await queryClient.invalidateQueries('products');
-			history.push(editingState.from || '/app/products', { flashMessage: 'Product has been added successfully' });
+			await queryClient.invalidateQueries('products', 'all-products-only');
+			history.push(editingState?.from || '/app/products', { flashMessage: 'Product has been added successfully' });
 		},
 		onError: (error) => {
 			message.error(utils.getErrorMessages(error));
 		},
 	});
 
-	const editProductMutation = useMutation((payload) => patch(`/products/id/${productState._id}`, payload), {
+	const editProductMutation = useMutation((payload) => patch(`/products/id/${productState?._id}`, payload), {
 		onSuccess: async () => {
 			await queryClient.invalidateQueries('products');
 			history.push('/app/products', { flashMessage: 'Product has been updated successfully' });

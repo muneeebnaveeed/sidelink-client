@@ -45,7 +45,7 @@ const ManageCustomer = (props) => {
 		},
 	});
 
-	const editProductMutation = useMutation((payload) => patch(`/customers/id/${editingState._id}`, payload), {
+	const editProductMutation = useMutation((payload) => patch(`/customers/id/${editingState?._id}`, payload), {
 		onSuccess: async () => {
 			await queryClient.invalidateQueries('customers');
 			history.push('/app/contacts', { flashMessage: 'Customer has been updated successfully' });

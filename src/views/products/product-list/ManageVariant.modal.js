@@ -41,7 +41,7 @@ const ManageVariant = ({ visible, data }) => {
 		},
 	});
 
-	const updateMutation = useMutation((payload) => patch(`/product_variants/id/${variantState._id}`, payload), {
+	const updateMutation = useMutation((payload) => patch(`/product_variants/id/${variantState?._id}`, payload), {
 		onSuccess: () => {
 			message.success('Product variant has been updated successfully');
 			handleCancel();

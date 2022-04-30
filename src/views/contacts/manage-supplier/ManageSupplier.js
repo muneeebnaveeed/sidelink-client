@@ -45,7 +45,7 @@ const ManageSupplier = (props) => {
 		},
 	});
 
-	const editProductMutation = useMutation((payload) => patch(`/contacts/id/${editingState._id}`, payload), {
+	const editProductMutation = useMutation((payload) => patch(`/contacts/id/${editingState?._id}`, payload), {
 		onSuccess: async () => {
 			await queryClient.invalidateQueries('suppliers');
 			history.push('/app/contacts', { flashMessage: 'Supplier has been updated successfully' });

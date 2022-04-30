@@ -53,7 +53,6 @@ const getExpandedTableColumns = ({ isPlaceholderData, deletingIds, onEdit, onAdd
 			title: 'Quantity',
 			dataIndex: 'quantity',
 			render: defaultRenderer(),
-			sorter: (a, b) => Utils.antdTableSorter(a, b, 'quantity'),
 		},
 		{
 			fixed: 'right',

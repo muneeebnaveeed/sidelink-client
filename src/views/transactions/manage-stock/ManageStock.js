@@ -47,7 +47,7 @@ const ManageStock = (props) => {
 	const [isConsuming, setIsConsuming] = useState(false);
 
 	const editingState = useMemo(() => location.state, []);
-	const stockState = useMemo(() => editingState?.stock, []);
+	const stockState = useMemo(() => editingState?.stock, [editingState.stock]);
 
 	const handleDiscard = useCallback(history.goBack, []);
 
@@ -188,13 +188,13 @@ const ManageStock = (props) => {
 						<Col sm={24} md={17}>
 							<Card>
 								<Row gutter={16} style={{ marginBottom: 24 }}>
-									<Col xs={showAddProductButton ? 17 : 24}>
+									<Col xs={showAddProductButton ? 19 : 24}>
 										<Form.Item style={{ marginBottom: 0 }} required label="Product">
 											<Select
 												showSearch
 												disabled={isEditing}
-												value={formik.values.product || null}
-												placeholder="Select existing product.."
+												value={formik.values.product}
+												placeholder="Select product"
 												loading={productsQuery.isLoading || variantsQuery.isLoading}
 												optionFilterProp="children"
 												filterOption={(input, option) =>
@@ -211,10 +211,10 @@ const ManageStock = (props) => {
 										</Form.Item>
 									</Col>
 									{!!showAddProductButton && (
-										<Col xs={5}>
+										<Col xs={4}>
 											<Flex style={{ height: '100%' }} alignItems="end">
 												<Button type="primary" onClick={handleAddProduct}>
-													Add New Product
+													Add Product
 												</Button>
 											</Flex>
 										</Col>
