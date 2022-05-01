@@ -1,4 +1,5 @@
 import { Spin } from 'antd';
+import NumberFormat from 'react-number-format';
 
 const { TableSkeleton, EllipsisDropdown, SingleDropdownMenu } = require('components/shared-components');
 
@@ -11,7 +12,7 @@ export const defaultRenderer = (isPlaceholderData) => {
 };
 
 export const customRenderer = (isPlaceholderData, node) => {
-	return (value, row) => <TableSkeleton loading={isPlaceholderData}>{node(value, row)}</TableSkeleton>;
+	return (value, row, index) => <TableSkeleton loading={isPlaceholderData}>{node(value, row, index)}</TableSkeleton>;
 };
 
 export const actionRenderer = (isPlaceholderData, params) => (row, elm) => {
@@ -33,6 +34,18 @@ const getRenderers = (isPlaceholderData) => {
 		indexRenderer: (pagingCounter) => indexRenderer(isPlaceholderData, pagingCounter),
 		defaultRenderer: () => defaultRenderer(isPlaceholderData),
 		customRenderer: (node) => customRenderer(isPlaceholderData, node),
+		priceRenderer: () =>
+			customRenderer(isPlaceholderData, (price) => (
+				<div>
+					<NumberFormat
+						displayType={'text'}
+						value={price}
+						prefix={'PKR '}
+						thousandSeparator
+						thousandsGroupStyle={'lakh'}
+					/>
+				</div>
+			)),
 		actionRenderer: ({ deletingIds, onEdit, onDelete }) =>
 			actionRenderer(isPlaceholderData, { deletingIds, onEdit, onDelete }),
 	};

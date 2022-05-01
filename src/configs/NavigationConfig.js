@@ -293,6 +293,32 @@ const dashBoardNavTree = [
 				],
 			},
 
+			{
+				key: 'transactions',
+				path: `${APP_PREFIX_PATH}/transactions`,
+				title: 'Transactions',
+				icon: ShoppingOutlined,
+				breadcrumb: true,
+				submenu: [
+					{
+						key: 'manage-purchase',
+						path: `${APP_PREFIX_PATH}/transactions/purchases/manage`,
+						title: 'Make Purchase',
+						icon: '',
+						breadcrumb: false,
+						submenu: [],
+					},
+					{
+						key: 'transaction-list',
+						path: `${APP_PREFIX_PATH}/transactions`,
+						title: 'Transaction List',
+						icon: '',
+						breadcrumb: true,
+						submenu: [],
+					},
+				],
+			},
+
 			// {
 			// 	key: 'sales',
 			// 	path: `${APP_PREFIX_PATH}/sales`,

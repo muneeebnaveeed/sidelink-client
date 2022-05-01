@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Card, Table, Input, Button, message, Dropdown, Space, Spin, Result, Typography } from 'antd';
+import { Card, Table, Input, Button, message, Dropdown, Space, Spin, Result, Typography, Menu } from 'antd';
 import { DownOutlined, SearchOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import {
 	BulkActionDropdownMenu,
@@ -64,31 +64,31 @@ const getTableColumns = ({
 			render: indexRenderer(pagingCounter),
 		},
 		{
-			title: 'Product',
-			dataIndex: ['product', 'name'],
-			render: customRenderer((name, row) => {
-				return (
-					<Flex flexDirection="column">
-						<Typography.Text strong>{row.product.name}</Typography.Text>
-						<Typography.Text type="secondary">{row.variants.length} VARIANTS</Typography.Text>
-					</Flex>
-				);
-			}),
+			title: 'Supplier',
+			dataIndex: ['supplier', 'name'],
+			// render: customRenderer((name, row) => {
+			// 	return (
+			// 		<Flex flexDirection="column">
+			// 			<Typography.Text strong>{row.product.name}</Typography.Text>
+			// 			<Typography.Text type="secondary">{row.variants.length} VARIANTS</Typography.Text>
+			// 		</Flex>
+			// 	);
+			// }),
 		},
-		{
-			width: 150,
-			render: productActionRenderer(isPlaceholderData, {
-				deletingIds,
-				onEdit,
-				onDelete,
-				onAddOneStock,
-				onConsumeOneStock,
-			}),
-		},
+		// {
+		// 	width: 150,
+		// 	render: productActionRenderer(isPlaceholderData, {
+		// 		deletingIds,
+		// 		onEdit,
+		// 		onDelete,
+		// 		onAddOneStock,
+		// 		onConsumeOneStock,
+		// 	}),
+		// },
 	];
 };
 
-const StockList = () => {
+const TransactionList = () => {
 	const history = useHistory();
 	const location = useLocation();
 	const queryClient = useQueryClient();
@@ -96,7 +96,7 @@ const StockList = () => {
 	const [deletingIds, setDeletingIds] = useState([]);
 	const [expandedProduct, setExpandedProduct] = useState(null);
 
-	const { page, limit, sort, search } = useTableUtility();
+	const { page, limit } = useTableUtility();
 
 	const [isModal, toggleModal] = useToggle();
 	const [modalData, setModalData] = useState(null);
@@ -107,23 +107,22 @@ const StockList = () => {
 		toggleModal,
 	});
 
-	const apiParams = useMemo(
-		() => ({ page: page.value, limit: limit.value, sort: sort.value, search: search.debounced }),
-		[limit.value, page.value, search.debounced, sort.value]
-	);
+	const apiParams = useMemo(() => ({ page: page.value, limit: limit.value }), [limit.value, page.value]);
 
 	const query = useQuery(
-		['stock', apiParams],
+		['transactions', apiParams],
 		() =>
-			get('/stock', {
+			get('/transactions', {
 				params: apiParams,
 			}),
 		{ placeholderData: PLACEHOLDER_DATA.STOCK }
 	);
 
-	const deleteProductMutation = useMutation((payload) => del(`/stock/id/${payload}`), {
-		onSuccess: () => {
-			message.success('Stock has been deleted successfully');
+	const deleteTransactionMutation = useMutation((payload) => del(`/transactions/id/${payload}`), {
+		onSuccess: (data, payload) => {
+			const ids = payload.split(',');
+
+			message.success(Utils.getDeletedSuccessfullyMessage('Transaction', 's', ids.length));
 			queryClient.invalidateQueries('stock');
 		},
 		onError: (error) => {
@@ -136,10 +135,10 @@ const StockList = () => {
 		},
 	});
 
-	const deleteAllMutation = useMutation(() => del(`/stock/all`), {
+	const deleteAllMutation = useMutation(() => del(`/transactions/all`), {
 		onSuccess: () => {
-			message.success('Stock has been deleted successfully');
-			queryClient.invalidateQueries('stock');
+			message.success('Transactions have been deleted successfully');
+			queryClient.invalidateQueries('transactions');
 		},
 		onError: (error) => {
 			message.error(Utils.getErrorMessages(error));
@@ -150,8 +149,12 @@ const StockList = () => {
 		},
 	});
 
-	const handleAddStock = useCallback(() => {
-		if (!isModal) history.push(`/app/stock/manage`);
+	const handleAddPurchase = useCallback(() => {
+		if (!isModal) history.push(`/app/transactions/purchases/manage`, { from: '/app/transactions' });
+	}, [history, isModal]);
+
+	const handleAddSale = useCallback(() => {
+		if (!isModal) history.push(`/app/transactions/sales/manage`, { from: '/app/transactions' });
 	}, [history, isModal]);
 
 	const handleEdit = useCallback(
@@ -176,13 +179,13 @@ const StockList = () => {
 	);
 
 	const handleBulkDelete = useCallback(() => {
-		var confirm = window.confirm(`Are you sure you want to delete selected stock?`);
+		var confirm = window.confirm(`Are you sure you want to delete selected transactions?`);
 		if (!confirm) return;
 
 		const ids = selectedRowKeys.join(',');
-		deleteProductMutation.mutate(ids);
+		deleteTransactionMutation.mutate(ids);
 		setDeletingIds([...selectedRowKeys]);
-	}, [deleteProductMutation, selectedRowKeys]);
+	}, [deleteTransactionMutation, selectedRowKeys]);
 
 	const handleDeleteAll = useCallback(() => {
 		var confirm = window.confirm(`Are you sure you want to delete all stock?`);
@@ -196,19 +199,10 @@ const StockList = () => {
 			if (!confirm) return;
 
 			const id = row._id;
-			deleteProductMutation.mutate(id);
+			deleteTransactionMutation.mutate(id);
 			setDeletingIds((prev) => [...prev, id]);
 		},
-		[deleteProductMutation]
-	);
-
-	const onSearch = useCallback(
-		(e) => {
-			const value = e.currentTarget.value;
-			search.set(value);
-			setSelectedRowKeys([]);
-		},
-		[search]
+		[deleteTransactionMutation]
 	);
 
 	const handleChangePagination = useCallback(
@@ -260,25 +254,24 @@ const StockList = () => {
 		return expandedProductId ? [expandedProductId] : [];
 	}, [expandedProduct?._id]);
 
-	const tableExpandable = useMemo(
-		() => ({
-			expandedRowRender: renderVariantList(query.isPlaceholderData),
-			onExpand: handleExpandProduct,
-			rowExpandable: () => !query.isPlaceholderData,
-			expandedRowKeys: getExpandedRowKeys(),
-		}),
-		[renderVariantList, query.isPlaceholderData, getExpandedRowKeys]
-	);
+	// const tableExpandable = useMemo(
+	// 	() => ({
+	// 		expandedRowRender: renderVariantList(query.isPlaceholderData),
+	// 		onExpand: handleExpandProduct,
+	// 		rowExpandable: () => !query.isPlaceholderData,
+	// 		expandedRowKeys: getExpandedRowKeys(),
+	// 	}),
+	// 	[renderVariantList, query.isPlaceholderData, getExpandedRowKeys]
+	// );
 
 	const tableProps = useMemo(
 		() => ({
 			rowKey: '_id',
-			loading: query.isLoading || deleteProductMutation.isLoading,
+			loading: query.isLoading || deleteTransactionMutation.isLoading || deleteAllMutation.isLoading,
 			pagination: tablePagination,
 			dataSource: query.data?.docs,
 			rowSelection: tableRowSelection,
-			onChange: Utils.handleChangeSort(sort.set),
-			expandable: tableExpandable,
+			// expandable: tableExpandable,
 			columns: getTableColumns({
 				pagingCounter: query.data?.pagingCounter,
 				onEdit: handleEdit,
@@ -290,17 +283,17 @@ const StockList = () => {
 			}),
 		}),
 		[
-			deleteProductMutation.isLoading,
+			deleteAllMutation.isLoading,
+			deleteTransactionMutation.isLoading,
 			deletingIds,
 			handleAddOneStock,
+			handleConsumeOneStock,
 			handleDelete,
 			handleEdit,
 			query.data?.docs,
 			query.data?.pagingCounter,
 			query.isLoading,
 			query.isPlaceholderData,
-			sort.set,
-			tableExpandable,
 			tablePagination,
 			tableRowSelection,
 		]
@@ -312,24 +305,17 @@ const StockList = () => {
 
 	useEffect(Utils.scrollToTop, [page, limit]);
 
-	useKey(['Enter'], handleAddStock);
-
 	useEffect(() => {
 		if (query.data?.hasNextPage) {
-			const apiParams = { page: page.value + 1, limit: limit.value, search: search.debounced, sort: sort.value };
+			const apiParams = { page: page.value + 1, limit: limit.value };
 			queryClient.prefetchQuery(['products', apiParams], () => get('/products', { params: apiParams }));
 		}
-	}, [query.data, page, limit.value, sort.value, search.debounced, queryClient]);
+	}, [query.data, page, limit.value, queryClient]);
 
 	return (
 		<>
 			<Card>
 				<Flex alignItems="center" justifyContent="between" mobileFlex={false}>
-					<Flex className="mb-1" mobileFlex={false}>
-						<When condition={query.isSuccess}>
-							<Input placeholder="Search" prefix={<SearchOutlined />} onChange={onSearch} />
-						</When>
-					</Flex>
 					<Flex>
 						<Space>
 							<Dropdown
@@ -347,16 +333,34 @@ const StockList = () => {
 									Bulk <DownOutlined />
 								</Button>
 							</Dropdown>
-							<Button onClick={handleAddStock} type="primary" icon={<PlusCircleOutlined />} block>
-								Add Stock
-							</Button>
+							<Dropdown
+								overlay={
+									<Menu>
+										<Menu.Item onClick={handleAddSale}>
+											<Flex alignItems="center">
+												<span className="ml-2">Sale</span>
+											</Flex>
+										</Menu.Item>
+										<Menu.Item onClick={handleAddPurchase}>
+											<Flex alignItems="center">
+												<span className="ml-2">Purchase</span>
+											</Flex>
+										</Menu.Item>
+									</Menu>
+								}
+								trigger={['click']}
+							>
+								<Button type="primary" icon={<PlusCircleOutlined />} block>
+									Add Transaction
+								</Button>
+							</Dropdown>
 						</Space>
 					</Flex>
 				</Flex>
 				<When condition={query.isError}>
 					<Result
 						status={500}
-						title="Oops.. We're having trouble fetching stock!"
+						title="Oops.. We're having trouble fetching transactions!"
 						subTitle={Utils.getErrorMessages(query.error)}
 						extra={
 							<Button type="danger" onClick={query.refetch}>
@@ -376,4 +380,4 @@ const StockList = () => {
 	);
 };
 
-export default StockList;
+export default TransactionList;

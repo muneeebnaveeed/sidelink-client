@@ -31,21 +31,22 @@ const ManageSupplier = (props) => {
 
 	const [form] = Form.useForm();
 
-	const editingState = useMemo(() => location.state, [location.state]);
+	const editingState = useMemo(() => location.state, []);
+	const supplierState = useMemo(() => editingState?.supplier, []);
 
 	const handleDiscard = useCallback(history.goBack, []);
 
-	const addMutation = useMutation((payload) => post('/contacts', payload), {
+	const addMutation = useMutation((payload) => post('/suppliers', payload), {
 		onSuccess: async () => {
 			await queryClient.invalidateQueries('suppliers');
-			history.push('/app/contacts', { flashMessage: 'Supplier has been added successfully' });
+			history.push(editingState?.from || '/app/contacts', { flashMessage: 'Supplier has been added successfully' });
 		},
 		onError: (error) => {
 			message.error(utils.getErrorMessages(error));
 		},
 	});
 
-	const editProductMutation = useMutation((payload) => patch(`/contacts/id/${editingState?._id}`, payload), {
+	const editProductMutation = useMutation((payload) => patch(`/suppliers/id/${supplierState?._id}`, payload), {
 		onSuccess: async () => {
 			await queryClient.invalidateQueries('suppliers');
 			history.push('/app/contacts', { flashMessage: 'Supplier has been updated successfully' });
@@ -56,8 +57,8 @@ const ManageSupplier = (props) => {
 	});
 
 	const mutation = useMemo(
-		() => (editingState ? editProductMutation : addMutation),
-		[addMutation, editProductMutation, editingState]
+		() => (supplierState ? editProductMutation : addMutation),
+		[addMutation, editProductMutation, supplierState]
 	);
 
 	const onFinish = useCallback(() => {
@@ -69,7 +70,7 @@ const ManageSupplier = (props) => {
 	useKey(['Escape'], handleDiscard);
 
 	useDidMount(() => {
-		if (editingState) form.setFieldsValue(editingState);
+		if (supplierState) form.setFieldsValue(supplierState);
 	});
 
 	return (
@@ -85,14 +86,14 @@ const ManageSupplier = (props) => {
 				<PageHeaderAlt className="border-bottom" overlap>
 					<div className="container">
 						<Flex className="py-2" mobileFlex={false} justifyContent="between" alignItems="center">
-							<h2 className="mb-0">{editingState ? 'Update Supplier' : `Add New Supplier`}</h2>
+							<h2 className="mb-0">{supplierState ? 'Update Supplier' : `Add New Supplier`}</h2>
 							<Flex alignItems="center">
 								<Space>
 									<Button className="mr-2" onClick={handleDiscard} disabled={mutation.isLoading}>
 										Back
 									</Button>
 									<Button type="primary" onClick={() => onFinish()} htmlType="submit" loading={mutation.isLoading}>
-										{editingState ? 'Update Supplier' : 'Add Supplier'}
+										{supplierState ? 'Update Supplier' : 'Add Supplier'}
 									</Button>
 								</Space>
 							</Flex>
