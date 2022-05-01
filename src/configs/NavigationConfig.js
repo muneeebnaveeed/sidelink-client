@@ -301,6 +301,14 @@ const dashBoardNavTree = [
 				breadcrumb: true,
 				submenu: [
 					{
+						key: 'manage-sale',
+						path: `${APP_PREFIX_PATH}/transactions/sales/manage`,
+						title: 'Make Sale',
+						icon: '',
+						breadcrumb: false,
+						submenu: [],
+					},
+					{
 						key: 'manage-purchase',
 						path: `${APP_PREFIX_PATH}/transactions/purchases/manage`,
 						title: 'Make Purchase',

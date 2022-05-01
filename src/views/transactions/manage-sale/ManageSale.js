@@ -18,7 +18,7 @@ import NumberFormat from 'react-number-format';
 const initialProduct = { product: '', price: '', quantity: '', total: '0' };
 
 const initialValues = {
-	supplier: '',
+	customer: '',
 	paid: '0',
 	products: [initialProduct],
 	discount: '0',
@@ -139,16 +139,16 @@ const getTableColumns = ({
 const validateForm = (values) => {
 	const errors = {};
 
-	const { supplier, discount, paid } = values;
+	const { customer, discount, paid } = values;
 
-	if (!supplier) errors.supplier = 'Please select a supplier';
+	if (!customer) errors.customer = 'Please select a customer';
 	if (discount === undefined || discount === null || discount === '') errors.discount = 'Please enter discount';
 	if (paid === undefined || paid === null || paid === '') errors.paid = 'Please enter paid amount';
 
 	return errors;
 };
 
-const ManagePurchase = (props) => {
+const ManageSale = (props) => {
 	const location = useLocation();
 	const history = useHistory();
 	const queryClient = useQueryClient();
@@ -157,17 +157,17 @@ const ManagePurchase = (props) => {
 
 	const handleDiscard = useCallback(history.goBack, []);
 
-	const suppliersQuery = useQuery('all-suppliers', () => get('/suppliers/all'));
+	const customersQuery = useQuery('all-customers', () => get('/customers/all'));
 
 	const stockQuery = useQuery('all-stock', () => get('/stock/all'));
 
-	const mutation = useMutation((payload) => post('/purchases', payload), {
+	const mutation = useMutation((payload) => post('/sales', payload), {
 		onSuccess: async () => {
 			queryClient.invalidateQueries('transactions');
 			queryClient.invalidateQueries('stock');
 			queryClient.invalidateQueries('all-stock');
 
-			history.push(editingState?.from || '/app/transactions', { flashMessage: 'Purchase has been made successfully' });
+			history.push(editingState?.from || '/app/transactions', { flashMessage: 'Sale has been made successfully' });
 		},
 		onError: (error) => {
 			message.error(utils.getErrorMessages(error));
@@ -197,12 +197,12 @@ const ManagePurchase = (props) => {
 		onSubmit: handleSubmit,
 	});
 
-	const handleChangeSupplier = useCallback((supplierId) => {
-		formik.setFieldValue('supplier', supplierId);
+	const handleChangeCustomer = useCallback((customerId) => {
+		formik.setFieldValue('customer', customerId);
 	}, []);
 
-	const handleAddSupplier = useCallback(
-		() => history.push('/app/contacts/suppliers/manage', { from: '/app/transactions/purchases/manage' }),
+	const handleAddCustomer = useCallback(
+		() => history.push('/app/contacts/customers/manage', { from: '/app/transactions/sales/manage' }),
 		[history]
 	);
 
@@ -220,8 +220,8 @@ const ManagePurchase = (props) => {
 			products[index].product = productId;
 			products[index].sku = correspondingStock.sku;
 			products[index].price = correspondingStock.price;
-			products[index].quantity = 0;
-			products[index].total = 0;
+			products[index].quantity = correspondingStock.quantity;
+			products[index].total = correspondingStock.price * correspondingStock.quantity;
 
 			formik.setFieldValue('products', products);
 		},
@@ -308,7 +308,7 @@ const ManagePurchase = (props) => {
 		<>
 			<Form
 				layout="vertical"
-				name="purchase_form"
+				name="sale_form"
 				className="ant-advanced-search-form"
 				autoComplete="off"
 				onFinish={formik.handleSubmit}
@@ -316,14 +316,14 @@ const ManagePurchase = (props) => {
 				<PageHeaderAlt className="border-bottom page-header-sticky" overlap>
 					<div className="container">
 						<Flex className="py-2" mobileFlex={false} justifyContent="between" alignItems="center">
-							<h2 className="mb-0">Make Purchase</h2>
+							<h2 className="mb-0">Make Sale</h2>
 							<Flex alignItems="center">
 								<Space>
 									<Button className="mr-2" onClick={handleDiscard} disabled={mutation.isLoading}>
 										Back
 									</Button>
 									<Button type="primary" htmlType="submit" loading={mutation.isLoading}>
-										Make Purchase
+										Make Sale
 									</Button>
 								</Space>
 							</Flex>
@@ -335,8 +335,8 @@ const ManagePurchase = (props) => {
 						<Col sm={24}>
 							<Card
 								extra={
-									<Button type="link" onClick={handleAddSupplier}>
-										Add Supplier
+									<Button type="link" onClick={handleAddCustomer}>
+										Add Customer
 									</Button>
 								}
 							>
@@ -345,24 +345,24 @@ const ManagePurchase = (props) => {
 										<Form.Item
 											style={{ marginBottom: 0 }}
 											required
-											label="Supplier"
-											validateStatus={getValidationStatus('supplier')}
-											help={getValidationError('supplier')}
+											label="Customer"
+											validateStatus={getValidationStatus('customer')}
+											help={getValidationError('customer')}
 										>
 											<Select
 												showSearch
-												value={formik.values.supplier || null}
-												placeholder="Select supplier"
-												loading={suppliersQuery.isLoading}
+												value={formik.values.customer || null}
+												placeholder="Select customer.."
+												loading={customersQuery.isLoading}
 												optionFilterProp="children"
 												filterOption={(input, option) =>
 													option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
 												}
-												onChange={handleChangeSupplier}
+												onChange={handleChangeCustomer}
 											>
-												{suppliersQuery.data?.map((supplier, index) => (
-													<Select.Option key={`supplier-select-${index}`} value={supplier._id}>
-														{supplier.name}
+												{customersQuery.data?.map((customer, index) => (
+													<Select.Option key={`customer-select-${index}`} value={customer._id}>
+														{customer.name}
 													</Select.Option>
 												))}
 											</Select>
@@ -444,4 +444,4 @@ const ManagePurchase = (props) => {
 	);
 };
 
-export default ManagePurchase;
+export default ManageSale;

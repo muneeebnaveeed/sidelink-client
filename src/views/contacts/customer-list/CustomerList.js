@@ -131,7 +131,7 @@ const CustomerList = () => {
 
 	const handleEdit = useCallback(
 		(row) => {
-			history.push('/app/contacts/customers/manage', row);
+			history.push('/app/contacts/customers/manage', { customer: row });
 		},
 		[history]
 	);

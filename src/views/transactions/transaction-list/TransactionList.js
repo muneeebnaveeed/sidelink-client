@@ -1,6 +1,20 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Card, Table, Input, Button, message, Dropdown, Space, Spin, Result, Typography, Menu } from 'antd';
-import { DownOutlined, SearchOutlined, PlusCircleOutlined } from '@ant-design/icons';
+import {
+	Card,
+	Table,
+	Input,
+	Button,
+	message,
+	Dropdown,
+	Space,
+	Spin,
+	Result,
+	Typography,
+	Menu,
+	Tag,
+	Select,
+} from 'antd';
+import { DownOutlined, DeleteOutlined, PlusCircleOutlined, PrinterOutlined } from '@ant-design/icons';
 import {
 	BulkActionDropdownMenu,
 	EllipsisDropdown,
@@ -13,14 +27,45 @@ import { useHistory, useLocation } from 'react-router-dom';
 import Utils, { useTableUtility } from 'utils';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { del, get } from 'utils/server';
-import AddStock from './AddStock.modal';
+import PayTransaction from './PayTransaction.modal';
 import { useDidMount, useKey, useToggle } from 'rooks';
 import { When } from 'react-if';
 import getRenderers from 'utils/tableRenderers';
 import PLACEHOLDER_DATA from 'utils/data';
 import useVariantList from './VariantList';
 
-const productActionRenderer = (isPlaceholderData, params) => (row, elm) => {
+const typeFilterOptions = [
+	{ label: 'Sales', value: 'sale' },
+	{ label: 'Purchases', value: 'purchase' },
+	{ label: 'Sales and Purchases', value: 'sale,purchase' },
+];
+
+const paidFilterOptions = [
+	{ label: 'All', value: 'all' },
+	{ label: 'Fully Paid', value: 'full' },
+	{ label: 'Partial Paid', value: 'partial' },
+];
+
+const TransactionDropdownMenu = ({ row, onPrint, onDelete }) => {
+	return (
+		<Menu>
+			<Menu.Item onClick={() => onPrint(row)} disabled>
+				<Flex alignItems="center">
+					<PrinterOutlined />
+					<span className="ml-2">Print</span>
+				</Flex>
+			</Menu.Item>
+			<Menu.Item onClick={() => onDelete(row)}>
+				<Flex alignItems="center">
+					<DeleteOutlined />
+					<span className="ml-2">Delete</span>
+				</Flex>
+			</Menu.Item>
+		</Menu>
+	);
+};
+
+const transactionActionRenderer = (isPlaceholderData, params) => (row, elm) => {
 	return (
 		<TableSkeleton loading={isPlaceholderData}>
 			<div className="text-right">
@@ -28,16 +73,11 @@ const productActionRenderer = (isPlaceholderData, params) => (row, elm) => {
 					<Spin />
 				) : (
 					<Space>
-						<Flex>
-							<Button type="link" onClick={() => params.onAddOneStock(elm)}>
-								Add
-							</Button>
-							<Button type="link" onClick={() => params.onConsumeOneStock(elm)}>
-								Consume
-							</Button>
-						</Flex>
+						<Button type="link" disabled={!params.canPay(elm)} onClick={() => params.onPay(elm)}>
+							Pay
+						</Button>
 						<EllipsisDropdown
-							menu={<SingleDropdownMenu row={elm} onEdit={params.onEdit} onDelete={params.onDelete} />}
+							menu={<TransactionDropdownMenu row={elm} onDelete={params.onDelete} onPrint={params.onPrint} />}
 						/>
 					</Space>
 				)}
@@ -46,16 +86,8 @@ const productActionRenderer = (isPlaceholderData, params) => (row, elm) => {
 	);
 };
 
-const getTableColumns = ({
-	pagingCounter,
-	onEdit,
-	onDelete,
-	deletingIds,
-	isPlaceholderData,
-	onAddOneStock,
-	onConsumeOneStock,
-}) => {
-	const { indexRenderer, customRenderer } = getRenderers(isPlaceholderData);
+const getTableColumns = ({ pagingCounter, onDelete, deletingIds, isPlaceholderData, canPay, onPay, onPrint }) => {
+	const { indexRenderer, defaultRenderer, priceRenderer, customRenderer } = getRenderers(isPlaceholderData);
 
 	return [
 		{
@@ -64,27 +96,54 @@ const getTableColumns = ({
 			render: indexRenderer(pagingCounter),
 		},
 		{
-			title: 'Supplier',
-			dataIndex: ['supplier', 'name'],
-			// render: customRenderer((name, row) => {
-			// 	return (
-			// 		<Flex flexDirection="column">
-			// 			<Typography.Text strong>{row.product.name}</Typography.Text>
-			// 			<Typography.Text type="secondary">{row.variants.length} VARIANTS</Typography.Text>
-			// 		</Flex>
-			// 	);
-			// }),
+			width: 250,
+			title: 'Contact',
+			dataIndex: ['contact', 'name'],
+			render: customRenderer((name, row) => (
+				<Space>
+					<div>{name}</div>
+					<Tag color={row.type === 'SALE' ? 'success' : 'error'}>{row.type}</Tag>
+				</Space>
+			)),
 		},
-		// {
-		// 	width: 150,
-		// 	render: productActionRenderer(isPlaceholderData, {
-		// 		deletingIds,
-		// 		onEdit,
-		// 		onDelete,
-		// 		onAddOneStock,
-		// 		onConsumeOneStock,
-		// 	}),
-		// },
+		{
+			width: 150,
+			title: 'Subtotal',
+			dataIndex: 'subtotal',
+			render: priceRenderer(),
+			sorter: true,
+		},
+		{
+			width: 0,
+			title: 'Discount',
+			dataIndex: 'discount',
+			render: defaultRenderer(),
+			sorter: true,
+		},
+		{
+			width: 150,
+			title: 'Total',
+			dataIndex: 'total',
+			render: priceRenderer(),
+			sorter: true,
+		},
+		{
+			width: 150,
+			title: 'Paid',
+			dataIndex: 'paid',
+			render: priceRenderer(),
+			sorter: true,
+		},
+		{
+			width: 150,
+			render: transactionActionRenderer(isPlaceholderData, {
+				deletingIds,
+				canPay,
+				onPay,
+				onPrint,
+				onDelete,
+			}),
+		},
 	];
 };
 
@@ -96,10 +155,12 @@ const TransactionList = () => {
 	const [deletingIds, setDeletingIds] = useState([]);
 	const [expandedProduct, setExpandedProduct] = useState(null);
 
-	const { page, limit } = useTableUtility();
+	const { page, limit, sort } = useTableUtility();
 
 	const [isModal, toggleModal] = useToggle();
 	const [modalData, setModalData] = useState(null);
+	const [typeFilter, setTypeFilter] = useState('sale,purchase');
+	const [paidFilter, setPaidFilter] = useState('all');
 
 	const renderVariantList = useVariantList({
 		modalData: { value: modalData, set: setModalData },
@@ -107,7 +168,10 @@ const TransactionList = () => {
 		toggleModal,
 	});
 
-	const apiParams = useMemo(() => ({ page: page.value, limit: limit.value }), [limit.value, page.value]);
+	const apiParams = useMemo(
+		() => ({ page: page.value, limit: limit.value, sort: sort.value, type: typeFilter, paid: paidFilter }),
+		[limit.value, page.value, paidFilter, sort.value, typeFilter]
+	);
 
 	const query = useQuery(
 		['transactions', apiParams],
@@ -115,7 +179,7 @@ const TransactionList = () => {
 			get('/transactions', {
 				params: apiParams,
 			}),
-		{ placeholderData: PLACEHOLDER_DATA.STOCK }
+		{ placeholderData: PLACEHOLDER_DATA.TRANSACTIONS }
 	);
 
 	const deleteTransactionMutation = useMutation((payload) => del(`/transactions/id/${payload}`), {
@@ -123,7 +187,7 @@ const TransactionList = () => {
 			const ids = payload.split(',');
 
 			message.success(Utils.getDeletedSuccessfullyMessage('Transaction', 's', ids.length));
-			queryClient.invalidateQueries('stock');
+			queryClient.invalidateQueries('transactions');
 		},
 		onError: (error) => {
 			message.error(Utils.getErrorMessages(error));
@@ -193,9 +257,25 @@ const TransactionList = () => {
 		deleteAllMutation.mutate();
 	}, [deleteAllMutation]);
 
+	const canPayTransaction = useCallback((transaction) => {
+		return transaction.paid < transaction.total;
+	}, []);
+
+	const handlePayTransaction = useCallback(
+		(transaction) => {
+			setModalData(transaction);
+			toggleModal();
+		},
+		[toggleModal]
+	);
+
+	const handlePrintTransaction = useCallback((transaction) => {
+		console.log(transaction);
+	}, []);
+
 	const handleDelete = useCallback(
 		(row) => {
-			var confirm = window.confirm('Are you sure to delete the stock?');
+			var confirm = window.confirm('Are you sure to delete the transaction?');
 			if (!confirm) return;
 
 			const id = row._id;
@@ -254,15 +334,15 @@ const TransactionList = () => {
 		return expandedProductId ? [expandedProductId] : [];
 	}, [expandedProduct?._id]);
 
-	// const tableExpandable = useMemo(
-	// 	() => ({
-	// 		expandedRowRender: renderVariantList(query.isPlaceholderData),
-	// 		onExpand: handleExpandProduct,
-	// 		rowExpandable: () => !query.isPlaceholderData,
-	// 		expandedRowKeys: getExpandedRowKeys(),
-	// 	}),
-	// 	[renderVariantList, query.isPlaceholderData, getExpandedRowKeys]
-	// );
+	const tableExpandable = useMemo(
+		() => ({
+			expandedRowRender: renderVariantList,
+			onExpand: handleExpandProduct,
+			rowExpandable: () => !query.isPlaceholderData,
+			expandedRowKeys: getExpandedRowKeys(),
+		}),
+		[renderVariantList, query.isPlaceholderData, getExpandedRowKeys]
+	);
 
 	const tableProps = useMemo(
 		() => ({
@@ -271,29 +351,32 @@ const TransactionList = () => {
 			pagination: tablePagination,
 			dataSource: query.data?.docs,
 			rowSelection: tableRowSelection,
-			// expandable: tableExpandable,
+			scroll: { x: 1015 },
+			onChange: Utils.handleChangeSort(sort.set),
+			expandable: tableExpandable,
 			columns: getTableColumns({
 				pagingCounter: query.data?.pagingCounter,
-				onEdit: handleEdit,
+				canPay: canPayTransaction,
+				onPay: handlePayTransaction,
 				onDelete: handleDelete,
-				onAddOneStock: handleAddOneStock,
-				onConsumeOneStock: handleConsumeOneStock,
+				onPrint: handlePrintTransaction,
 				deletingIds,
 				isPlaceholderData: query.isPlaceholderData,
 			}),
 		}),
 		[
+			canPayTransaction,
 			deleteAllMutation.isLoading,
 			deleteTransactionMutation.isLoading,
 			deletingIds,
-			handleAddOneStock,
-			handleConsumeOneStock,
 			handleDelete,
-			handleEdit,
+			handlePayTransaction,
+			handlePrintTransaction,
 			query.data?.docs,
 			query.data?.pagingCounter,
 			query.isLoading,
 			query.isPlaceholderData,
+			sort.set,
 			tablePagination,
 			tableRowSelection,
 		]
@@ -307,55 +390,87 @@ const TransactionList = () => {
 
 	useEffect(() => {
 		if (query.data?.hasNextPage) {
-			const apiParams = { page: page.value + 1, limit: limit.value };
-			queryClient.prefetchQuery(['products', apiParams], () => get('/products', { params: apiParams }));
+			const apiParams = {
+				page: page.value + 1,
+				limit: limit.value,
+				sort: sort.value,
+				type: typeFilter,
+				paid: paidFilter,
+			};
+			queryClient.prefetchQuery(['transactions', apiParams], () => get('/transactions', { params: apiParams }));
 		}
-	}, [query.data, page, limit.value, queryClient]);
+	}, [page, limit.value, typeFilter, paidFilter]);
 
 	return (
 		<>
 			<Card>
 				<Flex alignItems="center" justifyContent="between" mobileFlex={false}>
-					<Flex>
-						<Space>
-							<Dropdown
-								overlay={
-									<BulkActionDropdownMenu
-										onDelete={handleBulkDelete}
-										canDelete={selectedRowKeys.length && !deleteAllMutation.isLoading}
-										onDeleteAll={handleDeleteAll}
-										canDeleteAll={query.data?.docs.length && !selectedRowKeys.length && !deletingIds.length}
-									/>
-								}
-								trigger={['click']}
-							>
-								<Button type="secondary">
-									Bulk <DownOutlined />
-								</Button>
-							</Dropdown>
-							<Dropdown
-								overlay={
-									<Menu>
-										<Menu.Item onClick={handleAddSale}>
-											<Flex alignItems="center">
-												<span className="ml-2">Sale</span>
-											</Flex>
-										</Menu.Item>
-										<Menu.Item onClick={handleAddPurchase}>
-											<Flex alignItems="center">
-												<span className="ml-2">Purchase</span>
-											</Flex>
-										</Menu.Item>
-									</Menu>
-								}
-								trigger={['click']}
-							>
-								<Button type="primary" icon={<PlusCircleOutlined />} block>
-									Add Transaction
-								</Button>
-							</Dropdown>
-						</Space>
-					</Flex>
+					<Space>
+						<Select
+							style={{ width: 200 }}
+							value={typeFilter}
+							optionFilterProp="children"
+							filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+							onChange={setTypeFilter}
+						>
+							{typeFilterOptions.map((option, index) => (
+								<Select.Option value={option.value} key={`transaction-type-filter-select-${index}`}>
+									{option.label}
+								</Select.Option>
+							))}
+						</Select>
+						<Select
+							style={{ width: 120 }}
+							value={paidFilter}
+							optionFilterProp="children"
+							filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+							onChange={setPaidFilter}
+						>
+							{paidFilterOptions.map((option, index) => (
+								<Select.Option value={option.value} key={`transaction-paid-filter-select-${index}`}>
+									{option.label}
+								</Select.Option>
+							))}
+						</Select>
+					</Space>
+					<Space>
+						<Dropdown
+							overlay={
+								<BulkActionDropdownMenu
+									onDelete={handleBulkDelete}
+									canDelete={selectedRowKeys.length && !deleteAllMutation.isLoading}
+									onDeleteAll={handleDeleteAll}
+									canDeleteAll={query.data?.docs.length && !selectedRowKeys.length && !deletingIds.length}
+								/>
+							}
+							trigger={['click']}
+						>
+							<Button type="secondary">
+								Bulk <DownOutlined />
+							</Button>
+						</Dropdown>
+						<Dropdown
+							overlay={
+								<Menu>
+									<Menu.Item onClick={handleAddSale}>
+										<Flex alignItems="center">
+											<span className="ml-2">Sale</span>
+										</Flex>
+									</Menu.Item>
+									<Menu.Item onClick={handleAddPurchase}>
+										<Flex alignItems="center">
+											<span className="ml-2">Purchase</span>
+										</Flex>
+									</Menu.Item>
+								</Menu>
+							}
+							trigger={['click']}
+						>
+							<Button type="primary" icon={<PlusCircleOutlined />} block>
+								Add Transaction
+							</Button>
+						</Dropdown>
+					</Space>
 				</Flex>
 				<When condition={query.isError}>
 					<Result
@@ -375,7 +490,7 @@ const TransactionList = () => {
 					</div>
 				</When>
 			</Card>
-			<AddStock visible={{ set: toggleModal, value: isModal }} data={{ set: setModalData, value: modalData }} />
+			<PayTransaction visible={{ set: toggleModal, value: isModal }} data={{ set: setModalData, value: modalData }} />
 		</>
 	);
 };

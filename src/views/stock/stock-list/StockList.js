@@ -317,7 +317,7 @@ const StockList = () => {
 	useEffect(() => {
 		if (query.data?.hasNextPage) {
 			const apiParams = { page: page.value + 1, limit: limit.value, search: search.debounced, sort: sort.value };
-			queryClient.prefetchQuery(['products', apiParams], () => get('/products', { params: apiParams }));
+			queryClient.prefetchQuery(['stock', apiParams], () => get('/stock', { params: apiParams }));
 		}
 	}, [query.data, page, limit.value, sort.value, search.debounced, queryClient]);
 
