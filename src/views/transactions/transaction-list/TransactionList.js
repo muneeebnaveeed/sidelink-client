@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
 	Card,
 	Table,
@@ -14,7 +14,7 @@ import {
 	Tag,
 	Select,
 } from 'antd';
-import { DownOutlined, DeleteOutlined, PlusCircleOutlined, PrinterOutlined } from '@ant-design/icons';
+import { DownOutlined, DeleteOutlined, PlusCircleOutlined, PrinterOutlined, SearchOutlined } from '@ant-design/icons';
 import {
 	BulkActionDropdownMenu,
 	EllipsisDropdown,
@@ -33,6 +33,9 @@ import { When } from 'react-if';
 import getRenderers from 'utils/tableRenderers';
 import PLACEHOLDER_DATA from 'utils/data';
 import useVariantList from './VariantList';
+import Invoice from './Invoice';
+
+import { useReactToPrint } from 'react-to-print';
 
 const typeFilterOptions = [
 	{ label: 'Sales', value: 'sale' },
@@ -49,7 +52,7 @@ const paidFilterOptions = [
 const TransactionDropdownMenu = ({ row, onPrint, onDelete }) => {
 	return (
 		<Menu>
-			<Menu.Item onClick={() => onPrint(row)} disabled>
+			<Menu.Item onClick={() => onPrint(row)}>
 				<Flex alignItems="center">
 					<PrinterOutlined />
 					<span className="ml-2">Print</span>
@@ -93,7 +96,8 @@ const getTableColumns = ({ pagingCounter, onDelete, deletingIds, isPlaceholderDa
 		{
 			width: 0,
 			title: '#',
-			render: indexRenderer(pagingCounter),
+			dataIndex: 'sr',
+			render: defaultRenderer(),
 		},
 		{
 			width: 250,
@@ -155,12 +159,17 @@ const TransactionList = () => {
 	const [deletingIds, setDeletingIds] = useState([]);
 	const [expandedProduct, setExpandedProduct] = useState(null);
 
-	const { page, limit, sort } = useTableUtility();
+	const { page, limit, search, sort } = useTableUtility();
 
 	const [isModal, toggleModal] = useToggle();
 	const [modalData, setModalData] = useState(null);
 	const [typeFilter, setTypeFilter] = useState('sale,purchase');
 	const [paidFilter, setPaidFilter] = useState('all');
+
+	const [printTransaction, setPrintTransaction] = useState(null);
+	const [printProducts, setPrintProducts] = useState([]);
+
+	const printComponent = useRef();
 
 	const renderVariantList = useVariantList({
 		modalData: { value: modalData, set: setModalData },
@@ -169,8 +178,15 @@ const TransactionList = () => {
 	});
 
 	const apiParams = useMemo(
-		() => ({ page: page.value, limit: limit.value, sort: sort.value, type: typeFilter, paid: paidFilter }),
-		[limit.value, page.value, paidFilter, sort.value, typeFilter]
+		() => ({
+			page: page.value,
+			limit: limit.value,
+			sort: sort.value,
+			type: typeFilter,
+			search: search.value,
+			paid: paidFilter,
+		}),
+		[limit.value, page.value, paidFilter, search.value, sort.value, typeFilter]
 	);
 
 	const query = useQuery(
@@ -213,6 +229,15 @@ const TransactionList = () => {
 		},
 	});
 
+	const onSearch = useCallback(
+		(e) => {
+			const value = e.currentTarget.value;
+			search.set(value);
+			setSelectedRowKeys([]);
+		},
+		[search]
+	);
+
 	const handleAddPurchase = useCallback(() => {
 		if (!isModal) history.push(`/app/transactions/purchases/manage`, { from: '/app/transactions' });
 	}, [history, isModal]);
@@ -220,27 +245,6 @@ const TransactionList = () => {
 	const handleAddSale = useCallback(() => {
 		if (!isModal) history.push(`/app/transactions/sales/manage`, { from: '/app/transactions' });
 	}, [history, isModal]);
-
-	const handleEdit = useCallback(
-		(row) => {
-			history.push('/app/stock/manage', { ...row, isEditing: true });
-		},
-		[history]
-	);
-
-	const handleAddOneStock = useCallback(
-		(row) => {
-			history.push('/app/stock/manage', row);
-		},
-		[history]
-	);
-
-	const handleConsumeOneStock = useCallback(
-		(row) => {
-			history.push('/app/stock/manage', { ...row, isConsuming: true });
-		},
-		[history]
-	);
 
 	const handleBulkDelete = useCallback(() => {
 		var confirm = window.confirm(`Are you sure you want to delete selected transactions?`);
@@ -269,9 +273,41 @@ const TransactionList = () => {
 		[toggleModal]
 	);
 
-	const handlePrintTransaction = useCallback((transaction) => {
-		console.log(transaction);
-	}, []);
+	const reactToPrintContent = React.useCallback(() => printComponent.current, []);
+
+	const handlePrint = useReactToPrint({
+		content: reactToPrintContent,
+		documentTitle: 'Transacttion',
+		removeAfterPrint: true,
+		onAfterPrint: () => {
+			setPrintTransaction(null);
+			setPrintProducts([]);
+		},
+	});
+
+	useQuery(
+		['products-of-transaction', printTransaction?._id],
+		() => get(`/${printTransaction?.type.toLowerCase()}s/id/${printTransaction?._id}/products`),
+		{
+			enabled: Boolean(printTransaction?._id),
+			onSuccess: (data) => {
+				setPrintProducts(data);
+			},
+		}
+	);
+
+	const handlePrintTransaction = useCallback(
+		(transaction) => {
+			setPrintTransaction(transaction);
+
+			const data = queryClient.getQueryData(['products-of-transaction', transaction?._id]);
+
+			if (data) {
+				setPrintProducts(data);
+			}
+		},
+		[queryClient]
+	);
 
 	const handleDelete = useCallback(
 		(row) => {
@@ -377,6 +413,7 @@ const TransactionList = () => {
 			query.isLoading,
 			query.isPlaceholderData,
 			sort.set,
+			tableExpandable,
 			tablePagination,
 			tableRowSelection,
 		]
@@ -395,17 +432,23 @@ const TransactionList = () => {
 				limit: limit.value,
 				sort: sort.value,
 				type: typeFilter,
+				search: search.value,
 				paid: paidFilter,
 			};
 			queryClient.prefetchQuery(['transactions', apiParams], () => get('/transactions', { params: apiParams }));
 		}
-	}, [page, limit.value, typeFilter, paidFilter]);
+	}, [page, limit.value, search.value, typeFilter, paidFilter]);
+
+	useEffect(() => {
+		if (printTransaction && printProducts.length) handlePrint();
+	}, [printTransaction, printProducts.length]);
 
 	return (
 		<>
 			<Card>
 				<Flex alignItems="center" justifyContent="between" mobileFlex={false}>
 					<Space>
+						<Input placeholder="Search" prefix={<SearchOutlined />} onChange={onSearch} />
 						<Select
 							style={{ width: 200 }}
 							value={typeFilter}
@@ -491,6 +534,7 @@ const TransactionList = () => {
 				</When>
 			</Card>
 			<PayTransaction visible={{ set: toggleModal, value: isModal }} data={{ set: setModalData, value: modalData }} />
+			<Invoice transaction={printTransaction} products={printProducts} ref={printComponent} />
 		</>
 	);
 };

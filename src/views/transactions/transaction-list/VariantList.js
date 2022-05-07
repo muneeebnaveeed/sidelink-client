@@ -41,10 +41,9 @@ const getExpandedTableColumns = ({ isPlaceholderData }) => {
 			width: 138,
 		},
 		{
-			title: 'Variant',
+			title: 'Product',
 			dataIndex: ['productVariant', 'name'],
 			render: customRenderer((name, variant) => {
-				console.log(variant);
 				return (
 					<Flex flexDirection="column">
 						<Typography.Text strong>{`${name} (${variant.productVariant.product.name})`}</Typography.Text>

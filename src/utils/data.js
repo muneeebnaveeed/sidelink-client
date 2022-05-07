@@ -150,6 +150,29 @@ const PRODUCT_VARIANT_DATA = [
 	},
 ];
 
+const EMPLOYEES_DATA = [
+	{
+		name: 'Saundra Lynch',
+		phone: '+1 (838) 500-3795',
+		salary: 30000,
+	},
+	{
+		name: 'Jeannine Hudson',
+		phone: '+1 (827) 408-3449',
+		salary: 30000,
+	},
+	{
+		name: 'Jordan Fox',
+		phone: '+1 (958) 548-3122',
+		salary: 30000,
+	},
+	{
+		name: 'Stella Bell',
+		phone: '+1 (882) 536-3184',
+		salary: 30000,
+	},
+];
+
 const generatePlaceholderData = (data) => {
 	return {
 		docs: data,
@@ -167,6 +190,7 @@ const PLACEHOLDER_DATA = {
 	STOCK: generatePlaceholderData(PRODUCTS_DATA),
 	TRANSACTIONS: generatePlaceholderData(TRANSACTIONS_DATA),
 	PRODUCT_VARIANTS: PRODUCT_VARIANT_DATA,
+	EMPLOYEES: generatePlaceholderData(EMPLOYEES_DATA),
 };
 
 export default PLACEHOLDER_DATA;

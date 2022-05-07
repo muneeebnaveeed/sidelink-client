@@ -1,4 +1,5 @@
 import {
+	UserOutlined,
 	LaptopOutlined,
 	SnippetsOutlined,
 	PicLeftOutlined,
@@ -320,6 +321,32 @@ const dashBoardNavTree = [
 						key: 'transaction-list',
 						path: `${APP_PREFIX_PATH}/transactions`,
 						title: 'Transaction List',
+						icon: '',
+						breadcrumb: true,
+						submenu: [],
+					},
+				],
+			},
+
+			{
+				key: 'employees',
+				path: `${APP_PREFIX_PATH}/employees`,
+				title: 'Employees',
+				icon: UserOutlined,
+				breadcrumb: true,
+				submenu: [
+					{
+						key: 'manage-employee',
+						path: `${APP_PREFIX_PATH}/employees/manage`,
+						title: 'Add Employee',
+						icon: '',
+						breadcrumb: false,
+						submenu: [],
+					},
+					{
+						key: 'employee-list',
+						path: `${APP_PREFIX_PATH}/employees`,
+						title: 'Employee List',
 						icon: '',
 						breadcrumb: true,
 						submenu: [],

@@ -4,9 +4,13 @@
 @rtl-enable: true;
 
 // Background color for `<body>`
-@body-background:    #fafafb;
+// OLD @body-background:    #fafafb;
+@body-background:    #f3f3f3;
+
 // Base background color for most components
-@component-background: @white;
+// OLD @component-background: @white;
+@component-background: lighten(@body-background, 1%);
+
 // Popover background color
 @popover-background: @component-background;
 @popover-customize-border-color: @border-color-split;
@@ -37,9 +41,16 @@
 @heading-5-size: ceil(@font-size-base * 0.857);
 @heading-6-size: ceil(@font-size-base * 0.714);
 @line-height-base: 1.5;
-@border-radius-base: 0.625rem;
-@border-radius-sm: 0.25rem;
-@border-radius-lg:  0.3rem;
+
+// OLD
+// @border-radius-base: 0.625rem;
+// @border-radius-sm: 0.25rem;
+// @border-radius-lg:  0.3rem;
+
+@border-radius-base: 0.625rem / 2;
+@border-radius-sm: 0.25rem / 2;
+@border-radius-lg:  0.3rem / 2;
+
 @rounded-pill: 50rem;
 
 @font-weight-lighter: lighter;

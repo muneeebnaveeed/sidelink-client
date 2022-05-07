@@ -15,6 +15,8 @@ export const AppViews = () => {
 
 				<Route path={`${APP_PREFIX_PATH}/transactions`} component={lazy(() => import(`../transactions`))} />
 
+				<Route path={`${APP_PREFIX_PATH}/employees`} component={lazy(() => import(`../employees`))} />
+
 				<Route path={`${APP_PREFIX_PATH}/sales`} component={lazy(() => import(`../sales`))} />
 
 				<Route path={`${APP_PREFIX_PATH}/dashboards`} component={lazy(() => import(`./dashboards`))} />

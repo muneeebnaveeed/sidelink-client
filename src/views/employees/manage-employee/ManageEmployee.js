@@ -11,20 +11,31 @@ import { useDidMount, useKey } from 'rooks';
 const initialValues = {
 	name: '',
 	phone: '',
+	salary: 0,
 };
 
 const rules = {
 	name: [
 		{
 			required: true,
-			type: 'string',
-			min: 4,
+			message: 'Please enter employee name',
 		},
+		{
+			type: 'string',
+			message: 'Invalid employee name',
+		},
+		{ min: 4, message: 'Atleast 4 characters are required in employee name' },
 	],
 	phone: [],
+	salary: [
+		{
+			required: true,
+			message: 'Please enter employee salary',
+		},
+	],
 };
 
-const ManageCustomer = (props) => {
+const ManageEmployee = (props) => {
 	const location = useLocation();
 	const history = useHistory();
 	const queryClient = useQueryClient();
@@ -32,24 +43,24 @@ const ManageCustomer = (props) => {
 	const [form] = Form.useForm();
 
 	const editingState = useMemo(() => location.state, [location.state]);
-	const customerState = useMemo(() => editingState?.customer, [editingState?.customer]);
+	const employeeState = useMemo(() => editingState?.customer, [editingState?.customer]);
 
 	const handleDiscard = useCallback(history.goBack, []);
 
-	const addMutation = useMutation((payload) => post('/customers', payload), {
+	const addMutation = useMutation((payload) => post('/employees', payload), {
 		onSuccess: async () => {
-			await queryClient.invalidateQueries('customers');
-			history.push(editingState?.from || '/app/contacts', { flashMessage: 'Customer has been added successfully' });
+			await queryClient.invalidateQueries('employees');
+			history.push(editingState?.from || '/app/employees', { flashMessage: 'Employee has been added successfully' });
 		},
 		onError: (error) => {
 			message.error(utils.getErrorMessages(error));
 		},
 	});
 
-	const editProductMutation = useMutation((payload) => patch(`/customers/id/${customerState?._id}`, payload), {
+	const editProductMutation = useMutation((payload) => patch(`/employees/id/${employeeState?._id}`, payload), {
 		onSuccess: async () => {
-			await queryClient.invalidateQueries('customers');
-			history.push('/app/contacts', { flashMessage: 'Customer has been updated successfully' });
+			await queryClient.invalidateQueries('employees');
+			history.push('/app/employees', { flashMessage: 'Employee has been updated successfully' });
 		},
 		onError: (error) => {
 			message.error(utils.getErrorMessages(error));
@@ -57,20 +68,18 @@ const ManageCustomer = (props) => {
 	});
 
 	const mutation = useMemo(
-		() => (customerState ? editProductMutation : addMutation),
-		[addMutation, editProductMutation, customerState]
+		() => (employeeState ? editProductMutation : addMutation),
+		[addMutation, editProductMutation, employeeState]
 	);
 
 	const onFinish = useCallback(() => {
-		form.validateFields().then((values) => {
-			mutation.mutate({ ...values, type: 'CUSTOMER' });
-		});
+		form.validateFields().then(mutation.mutate);
 	}, [form, mutation]);
 
 	useKey(['Escape'], handleDiscard);
 
 	useDidMount(() => {
-		if (customerState) form.setFieldsValue(customerState);
+		if (employeeState) form.setFieldsValue(employeeState);
 	});
 
 	return (
@@ -78,7 +87,7 @@ const ManageCustomer = (props) => {
 			<Form
 				layout="vertical"
 				form={form}
-				name="supplier_form"
+				name="employee_form"
 				className="ant-advanced-search-form"
 				initialValues={initialValues}
 				autoComplete="off"
@@ -86,14 +95,14 @@ const ManageCustomer = (props) => {
 				<PageHeaderAlt className="border-bottom" overlap>
 					<div className="container">
 						<Flex className="py-2" mobileFlex={false} justifyContent="between" alignItems="center">
-							<h2 className="mb-0">{customerState ? 'Update Customer' : `Add New Customer`}</h2>
+							<h2 className="mb-0">{employeeState ? 'Update Employee' : `Add New Employee`}</h2>
 							<Flex alignItems="center">
 								<Space>
 									<Button className="mr-2" onClick={handleDiscard} disabled={mutation.isLoading}>
 										Back
 									</Button>
 									<Button type="primary" onClick={() => onFinish()} htmlType="submit" loading={mutation.isLoading}>
-										{customerState ? 'Update Customer' : 'Add Customer'}
+										{employeeState ? 'Update Employee' : 'Add Employee'}
 									</Button>
 								</Space>
 							</Flex>
@@ -106,16 +115,22 @@ const ManageCustomer = (props) => {
 							<Card title="Basic Info">
 								<Row>
 									<Col sm={24}>
-										<Form.Item name="name" label="Customer name" rules={rules.name}>
+										<Form.Item name="name" label="Employee name" rules={rules.name}>
 											<Input />
 										</Form.Item>
 									</Col>
 								</Row>
 
 								<Row gutter={32}>
-									<Col sm={24}>
+									<Col sm={12}>
 										<Form.Item name="phone" label="Phone" rules={rules.phone}>
 											<Input />
+										</Form.Item>
+									</Col>
+
+									<Col sm={12}>
+										<Form.Item name="salary" label="Salary" rules={rules.salary}>
+											<Input type="number" />
 										</Form.Item>
 									</Col>
 								</Row>
@@ -128,4 +143,4 @@ const ManageCustomer = (props) => {
 	);
 };
 
-export default ManageCustomer;
+export default ManageEmployee;
