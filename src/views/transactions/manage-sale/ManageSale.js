@@ -10,7 +10,7 @@ import { useDidMount, useKey } from 'rooks';
 import { useFormik } from 'formik';
 import Utils from 'utils';
 import getRenderers from 'utils/tableRenderers';
-import { EllipsisDropdown } from 'components/shared-components';
+import { AnimatedWrapper, EllipsisDropdown } from 'components/shared-components';
 import { CloseOutlined } from '@ant-design/icons';
 import cloneDeep from 'lodash.clonedeep';
 import NumberFormat from 'react-number-format';
@@ -305,7 +305,7 @@ const ManageSale = (props) => {
 	const getValidationStatus = useCallback((key) => (formik.errors[key] ? 'error' : null), [formik.errors]);
 
 	return (
-		<>
+		<AnimatedWrapper>
 			<Form
 				layout="vertical"
 				name="sale_form"
@@ -440,7 +440,7 @@ const ManageSale = (props) => {
 					</Row>
 				</div>
 			</Form>
-		</>
+		</AnimatedWrapper>
 	);
 };
 

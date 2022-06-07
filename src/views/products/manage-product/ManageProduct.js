@@ -10,6 +10,8 @@ import { useDidMount, useKey } from 'rooks';
 import { useFormik } from 'formik';
 import Utils from 'utils';
 import VariantRow from './VariantRow';
+import { AnimatedWrapper } from 'components/shared-components';
+import { cloneDeep } from 'lodash';
 
 const initialValues = {
 	name: '',
@@ -112,14 +114,8 @@ const AddProduct = (props) => {
 		onSubmit: handleSubmit,
 	});
 
-	const handleAddVariant = useCallback(() => {
-		const variants = [...formik.values.variants];
-		variants.push({ name: '', price: '', sku: '' });
-		formik.setFieldValue('variants', variants);
-	}, []);
-
 	const updateSKUOfAllVariants = useCallback((productName) => {
-		const variants = [...formik.values.variants];
+		const variants = cloneDeep(formik.values.variants);
 		let newSku = Utils.generateSKU(productName, 'abcd', 0);
 		if (newSku) {
 			newSku = newSku.split('-');
@@ -141,7 +137,7 @@ const AddProduct = (props) => {
 	}, []);
 
 	return (
-		<>
+		<AnimatedWrapper>
 			<Form
 				layout="vertical"
 				name="product_form"
@@ -168,7 +164,7 @@ const AddProduct = (props) => {
 				</PageHeaderAlt>
 				<div className="container" style={{ marginTop: 120 }}>
 					<Row gutter={32}>
-						<Col sm={24} md={17}>
+						<Col xs={24}>
 							<Card title="Basic Info">
 								<Form.Item
 									required
@@ -181,40 +177,34 @@ const AddProduct = (props) => {
 							</Card>
 						</Col>
 					</Row>
-					<Row>
-						<Col sm={24} md={24} lg={17}>
-							<Card
-								title="Variants & SKUs"
-								extra={
-									<Button type="link" onClick={handleAddVariant}>
-										Add Variant
-									</Button>
-								}
-							>
-								<Space direction="vertical" size="small" style={{ width: '100%' }} split={<Divider />}>
-									{formik.values.variants.map((variant, index) => {
-										const { values, errors, setFieldError, setFieldValue } = formik;
 
-										const variantProps = {
-											index,
-											...variant,
-											productName: values.name,
-											key: `product-variant-${index}`,
-											variants: values.variants,
-											variantErrors: errors.variants,
-											setFieldValue: setFieldValue,
-											setFieldError: setFieldError,
-										};
+					{formik.values.variants.map((variant, index) => {
+						const { values, errors, setFieldError, setFieldValue } = formik;
 
-										return <VariantRow {...variantProps} />;
-									})}
-								</Space>
-							</Card>
-						</Col>
-					</Row>
+						const variantProps = {
+							index,
+							...variant,
+							productName: values.name,
+							key: `product-variant-${index}`,
+							variants: values.variants,
+							variantErrors: errors.variants,
+							setFieldValue: setFieldValue,
+							setFieldError: setFieldError,
+						};
+
+						return (
+							<Row>
+								<Col xs={24}>
+									<Card>
+										<VariantRow {...variantProps} />
+									</Card>
+								</Col>
+							</Row>
+						);
+					})}
 				</div>
 			</Form>
-		</>
+		</AnimatedWrapper>
 	);
 };
 

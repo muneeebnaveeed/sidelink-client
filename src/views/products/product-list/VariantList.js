@@ -1,11 +1,12 @@
 import { message, Spin, Table } from 'antd';
-import { EllipsisDropdown, SingleDropdownMenu } from 'components/shared-components';
+import { AnimatedExpandedWrapper, EllipsisDropdown, SingleDropdownMenu } from 'components/shared-components';
 import React, { useCallback, useState } from 'react';
 import NumberFormat from 'react-number-format';
 import { useMutation, useQueryClient } from 'react-query';
 import Utils from 'utils';
 import { del } from 'utils/server';
 import getRenderers from 'utils/tableRenderers';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const variantActionRenderer =
 	({ deletingIds, ...params }) =>
@@ -62,7 +63,7 @@ const getExpandedTableColumns = ({ isPlaceholderData, deletingIds, onEdit, onDel
 	];
 };
 
-const useVariantList = ({ modalData, toggleModal }) => {
+const useVariantList = ({ modalData, toggleModal, expandedProduct }) => {
 	const [variantDeletingIds, setVariantDeletingIds] = useState([]);
 
 	const queryClient = useQueryClient();
@@ -120,7 +121,14 @@ const useVariantList = ({ modalData, toggleModal }) => {
 		[handleDeleteVariant, handleEditVariant, variantDeletingIds]
 	);
 
-	return (isPlaceholderData) => (row) => <Table {...getExpandedTableProps(row, isPlaceholderData)} />;
+	return (isPlaceholderData) => (row) => {
+		const isExpanded = row._id === expandedProduct.value?._id;
+		return (
+			<AnimatedExpandedWrapper isExpanded={isExpanded}>
+				<Table {...getExpandedTableProps(row, isPlaceholderData)} />
+			</AnimatedExpandedWrapper>
+		);
+	};
 };
 
 export default useVariantList;

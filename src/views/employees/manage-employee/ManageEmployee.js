@@ -7,6 +7,7 @@ import { patch, post } from 'utils/server';
 import { useQueryClient, useMutation } from 'react-query';
 import utils from 'utils';
 import { useDidMount, useKey } from 'rooks';
+import { AnimatedWrapper } from 'components/shared-components';
 
 const initialValues = {
 	name: '',
@@ -43,7 +44,7 @@ const ManageEmployee = (props) => {
 	const [form] = Form.useForm();
 
 	const editingState = useMemo(() => location.state, [location.state]);
-	const employeeState = useMemo(() => editingState?.customer, [editingState?.customer]);
+	const employeeState = useMemo(() => editingState?.employee, [editingState?.employee]);
 
 	const handleDiscard = useCallback(history.goBack, []);
 
@@ -83,7 +84,7 @@ const ManageEmployee = (props) => {
 	});
 
 	return (
-		<>
+		<AnimatedWrapper>
 			<Form
 				layout="vertical"
 				form={form}
@@ -139,7 +140,7 @@ const ManageEmployee = (props) => {
 					</Row>
 				</div>
 			</Form>
-		</>
+		</AnimatedWrapper>
 	);
 };
 

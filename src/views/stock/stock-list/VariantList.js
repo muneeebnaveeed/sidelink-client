@@ -1,5 +1,5 @@
 import { Button, message, Space, Spin, Table } from 'antd';
-import { EllipsisDropdown, SingleDropdownMenu } from 'components/shared-components';
+import { AnimatedExpandedWrapper, EllipsisDropdown, SingleDropdownMenu } from 'components/shared-components';
 import React, { useCallback, useState } from 'react';
 import NumberFormat from 'react-number-format';
 import { useMutation, useQueryClient } from 'react-query';
@@ -112,7 +112,12 @@ const useVariantList = ({ modalData, toggleModal, expandedProduct }) => {
 		[handleAddOneStock, handleEditOneStock, variantDeletingIds]
 	);
 
-	return (isPlaceholderData) => (row) => <Table {...getExpandedTableProps(row, isPlaceholderData)} />;
+	return (isPlaceholderData) => (row) =>
+		(
+			<AnimatedExpandedWrapper isExpanded={row._id === expandedProduct.value?._id}>
+				<Table {...getExpandedTableProps(row, isPlaceholderData)} />
+			</AnimatedExpandedWrapper>
+		);
 };
 
 export default useVariantList;

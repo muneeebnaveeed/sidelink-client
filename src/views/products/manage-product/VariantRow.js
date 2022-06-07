@@ -1,8 +1,9 @@
-import { Button, Col, Form, Input, InputNumber, Row } from 'antd';
+import { Button, Col, Form, Input, InputNumber, Row, Space } from 'antd';
 import { Flex } from 'components/shared-components';
 import React, { useCallback, useMemo } from 'react';
-import { DeleteOutlined } from '@ant-design/icons';
+import { CloseOutlined } from '@ant-design/icons';
 import Utils from 'utils';
+import { cloneDeep } from 'lodash';
 
 const VariantRow = ({
 	name,
@@ -15,7 +16,7 @@ const VariantRow = ({
 	setFieldError,
 	productName,
 }) => {
-	const showDeleteButton = useMemo(() => variants.length > 1, [variants.length]);
+	const canDelete = useMemo(() => variants.length > 1, [variants.length]);
 
 	const getVariantValidationError = useCallback((key, index) => variantErrors?.[index]?.[key] || null, [variantErrors]);
 
@@ -27,7 +28,7 @@ const VariantRow = ({
 	const handleChangeVariant = useCallback(
 		(key, index) => (event) => {
 			const value = event.target.value;
-			const updatedVariants = [...variants];
+			const updatedVariants = cloneDeep(variants);
 
 			if (key === 'name') {
 				const sku = Utils.generateSKU(productName, value, index);
@@ -42,7 +43,7 @@ const VariantRow = ({
 
 	const handleChangeCustomVariant = useCallback(
 		(value, key, index) => {
-			const updatedVariants = [...variants];
+			const updatedVariants = cloneDeep(variants);
 			updatedVariants[index][key] = value;
 			setFieldValue('variants', updatedVariants);
 		},
@@ -51,8 +52,12 @@ const VariantRow = ({
 
 	const handleRemoveVariant = useCallback(
 		(index) => () => {
-			const updatedVariants = [...variants];
-			const errors = [...(typeof variantErrors === 'object' ? [] : variantErrors)];
+			const updatedVariants = cloneDeep(variants);
+			const errors = [
+				...(typeof variantErrors === 'object' || variantErrors === undefined || variantErrors === null
+					? []
+					: variantErrors),
+			];
 			errors.splice(index, 1);
 			updatedVariants.splice(index, 1);
 			setFieldError('variants', errors);
@@ -61,9 +66,15 @@ const VariantRow = ({
 		[setFieldError, setFieldValue, variantErrors, variants]
 	);
 
+	const handleAddVariant = useCallback(() => {
+		const $variants = cloneDeep(variants);
+		$variants.push({ name: '', price: '', sku: '' });
+		setFieldValue('variants', $variants);
+	}, [setFieldValue, variants]);
+
 	return (
 		<Row gutter={16}>
-			<Col sm={24} xl={12}>
+			<Col>
 				<Form.Item
 					required
 					label="Variant name"
@@ -74,7 +85,7 @@ const VariantRow = ({
 					<Input size="small" value={name} onChange={handleChangeVariant('name', index)} />
 				</Form.Item>
 			</Col>
-			<Col sm={24} md={11} xl={showDeleteButton ? 5 : 6}>
+			<Col>
 				<Form.Item
 					required
 					label="Price"
@@ -84,7 +95,6 @@ const VariantRow = ({
 				>
 					<InputNumber
 						size="small"
-						className="w-100"
 						value={price}
 						formatter={(value) => value.replace(/(\d+?)(?=(\d\d)+(\d)(?!\d))(\.\d+)?/g, '$1,')}
 						parser={(value) => {
@@ -95,7 +105,7 @@ const VariantRow = ({
 					/>
 				</Form.Item>
 			</Col>
-			<Col sm={22} md={11} xl={showDeleteButton ? 5 : 6}>
+			<Col>
 				<Form.Item
 					required
 					label="SKU"
@@ -106,20 +116,22 @@ const VariantRow = ({
 					<Input size="small" value={sku} onChange={handleChangeVariant('sku', index)} />
 				</Form.Item>
 			</Col>
-			{!!showDeleteButton && (
-				<Col sm={2}>
-					<Flex justifyContent="center" className="w-100 h-100">
+			<Col style={{ flex: 1 }}>
+				<Flex className="h-100" justifyContent="end" alignItems="center">
+					<Space>
 						<Button
-							size="small"
-							type="danger"
-							shape="circle"
-							className="delete-form-list-item-button"
-							icon={<DeleteOutlined />}
-							onClick={handleRemoveVariant(index)}
-						/>
-					</Flex>
-				</Col>
-			)}
+							type="link"
+							disabled={index < variants.length - 1 || !name || !price || !sku}
+							onClick={handleAddVariant}
+						>
+							Add Variant
+						</Button>
+						<Button type="link" disabled={!canDelete} onClick={handleRemoveVariant(index)}>
+							<CloseOutlined />
+						</Button>
+					</Space>
+				</Flex>
+			</Col>
 		</Row>
 	);
 };

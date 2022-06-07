@@ -2,7 +2,6 @@ import { Button, Card, Space, Table, Typography } from 'antd';
 import Column from 'antd/lib/table/Column';
 import React, { Component } from 'react';
 import NumberFormat from 'react-number-format';
-import { invoiceData } from 'views/app-views/pages/invoice/invoiceData';
 import dayjs from 'dayjs';
 import { Flex } from 'components/shared-components';
 

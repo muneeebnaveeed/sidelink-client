@@ -13,5 +13,7 @@ export { default as StatisticWidget } from './StatisticWidget';
 export { default as BulkActionDropdownMenu } from './BulkActionDropdownMenu';
 export { default as SingleDropdownMenu } from './SingleDropdownMenu';
 export { default as TableSkeleton } from './TableSkeleton';
+export { default as AnimatedWrapper } from './AnimatedWrapper';
+export { default as AnimatedExpandedWrapper } from './AnimatedExpandedWrapper';
 
 export * from './Spinner';

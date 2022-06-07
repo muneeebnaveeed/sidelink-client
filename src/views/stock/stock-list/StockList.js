@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Card, Table, Input, Button, message, Dropdown, Space, Spin, Result, Typography } from 'antd';
 import { DownOutlined, SearchOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import {
+	AnimatedWrapper,
 	BulkActionDropdownMenu,
 	EllipsisDropdown,
 	Flex,
@@ -293,6 +294,7 @@ const StockList = () => {
 			deleteProductMutation.isLoading,
 			deletingIds,
 			handleAddOneStock,
+			handleConsumeOneStock,
 			handleDelete,
 			handleEdit,
 			query.data?.docs,
@@ -323,54 +325,56 @@ const StockList = () => {
 
 	return (
 		<>
-			<Card>
-				<Flex alignItems="center" justifyContent="between" mobileFlex={false}>
-					<Flex className="mb-1" mobileFlex={false}>
-						<When condition={query.isSuccess}>
-							<Input placeholder="Search" prefix={<SearchOutlined />} onChange={onSearch} />
-						</When>
-					</Flex>
-					<Flex>
-						<Space>
-							<Dropdown
-								overlay={
-									<BulkActionDropdownMenu
-										onDelete={handleBulkDelete}
-										canDelete={selectedRowKeys.length && !deleteAllMutation.isLoading}
-										onDeleteAll={handleDeleteAll}
-										canDeleteAll={query.data?.docs.length && !selectedRowKeys.length && !deletingIds.length}
-									/>
-								}
-								trigger={['click']}
-							>
-								<Button type="secondary">
-									Bulk <DownOutlined />
+			<AnimatedWrapper>
+				<Card>
+					<Flex alignItems="center" justifyContent="between" mobileFlex={false}>
+						<Flex className="mb-1" mobileFlex={false}>
+							<When condition={query.isSuccess}>
+								<Input placeholder="Search" prefix={<SearchOutlined />} onChange={onSearch} />
+							</When>
+						</Flex>
+						<Flex>
+							<Space>
+								<Dropdown
+									overlay={
+										<BulkActionDropdownMenu
+											onDelete={handleBulkDelete}
+											canDelete={selectedRowKeys.length && !deleteAllMutation.isLoading}
+											onDeleteAll={handleDeleteAll}
+											canDeleteAll={query.data?.docs.length && !selectedRowKeys.length && !deletingIds.length}
+										/>
+									}
+									trigger={['click']}
+								>
+									<Button type="secondary">
+										Bulk <DownOutlined />
+									</Button>
+								</Dropdown>
+								<Button onClick={handleAddStock} type="primary" icon={<PlusCircleOutlined />} block>
+									Add Stock
 								</Button>
-							</Dropdown>
-							<Button onClick={handleAddStock} type="primary" icon={<PlusCircleOutlined />} block>
-								Add Stock
-							</Button>
-						</Space>
+							</Space>
+						</Flex>
 					</Flex>
-				</Flex>
-				<When condition={query.isError}>
-					<Result
-						status={500}
-						title="Oops.. We're having trouble fetching stock!"
-						subTitle={Utils.getErrorMessages(query.error)}
-						extra={
-							<Button type="danger" onClick={query.refetch}>
-								Try again
-							</Button>
-						}
-					/>
-				</When>
-				<When condition={query.isSuccess}>
-					<div className="table-responsive">
-						<Table {...tableProps} />
-					</div>
-				</When>
-			</Card>
+					<When condition={query.isError}>
+						<Result
+							status={500}
+							title="Oops.. We're having trouble fetching stock!"
+							subTitle={Utils.getErrorMessages(query.error)}
+							extra={
+								<Button type="danger" onClick={query.refetch}>
+									Try again
+								</Button>
+							}
+						/>
+					</When>
+					<When condition={query.isSuccess}>
+						<div className="table-responsive">
+							<Table {...tableProps} />
+						</div>
+					</When>
+				</Card>
+			</AnimatedWrapper>
 			<AddStock visible={{ set: toggleModal, value: isModal }} data={{ set: setModalData, value: modalData }} />
 		</>
 	);

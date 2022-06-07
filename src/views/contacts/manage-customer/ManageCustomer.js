@@ -7,6 +7,7 @@ import { patch, post } from 'utils/server';
 import { useQueryClient, useMutation } from 'react-query';
 import utils from 'utils';
 import { useDidMount, useKey } from 'rooks';
+import { AnimatedWrapper } from 'components/shared-components';
 
 const initialValues = {
 	name: '',
@@ -74,7 +75,7 @@ const ManageCustomer = (props) => {
 	});
 
 	return (
-		<>
+		<AnimatedWrapper>
 			<Form
 				layout="vertical"
 				form={form}
@@ -124,7 +125,7 @@ const ManageCustomer = (props) => {
 					</Row>
 				</div>
 			</Form>
-		</>
+		</AnimatedWrapper>
 	);
 };
 

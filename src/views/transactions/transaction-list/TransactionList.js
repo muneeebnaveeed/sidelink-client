@@ -13,9 +13,19 @@ import {
 	Menu,
 	Tag,
 	Select,
+	Tooltip,
+	DatePicker,
 } from 'antd';
-import { DownOutlined, DeleteOutlined, PlusCircleOutlined, PrinterOutlined, SearchOutlined } from '@ant-design/icons';
 import {
+	DownOutlined,
+	DeleteOutlined,
+	PlusCircleOutlined,
+	PrinterOutlined,
+	SearchOutlined,
+	QuestionOutlined,
+} from '@ant-design/icons';
+import {
+	AnimatedWrapper,
 	BulkActionDropdownMenu,
 	EllipsisDropdown,
 	Flex,
@@ -36,6 +46,10 @@ import useVariantList from './VariantList';
 import Invoice from './Invoice';
 
 import { useReactToPrint } from 'react-to-print';
+import dayjs from 'dayjs';
+import { motion } from 'framer-motion';
+
+const transformDatesPayload = ($startDate, $endDate) => [$startDate, $endDate].map(($date) => $date.format()).join(',');
 
 const typeFilterOptions = [
 	{ label: 'Sales', value: 'sale' },
@@ -45,7 +59,7 @@ const typeFilterOptions = [
 
 const paidFilterOptions = [
 	{ label: 'All', value: 'all' },
-	{ label: 'Fully Paid', value: 'full' },
+	{ label: 'Full Paid', value: 'full' },
 	{ label: 'Partial Paid', value: 'partial' },
 ];
 
@@ -79,6 +93,12 @@ const transactionActionRenderer = (isPlaceholderData, params) => (row, elm) => {
 						<Button type="link" disabled={!params.canPay(elm)} onClick={() => params.onPay(elm)}>
 							Pay
 						</Button>
+						<Tooltip title={dayjs(elm.createdAt).format('D MMM YYYY - h:mm a')}>
+							<Button type="link">
+								<QuestionOutlined />
+							</Button>
+						</Tooltip>
+
 						<EllipsisDropdown
 							menu={<TransactionDropdownMenu row={elm} onDelete={params.onDelete} onPrint={params.onPrint} />}
 						/>
@@ -106,7 +126,10 @@ const getTableColumns = ({ pagingCounter, onDelete, deletingIds, isPlaceholderDa
 			render: customRenderer((name, row) => (
 				<Space>
 					<div>{name}</div>
-					<Tag color={row.type === 'SALE' ? 'success' : 'error'}>{row.type}</Tag>
+					<Flex>
+						<Tag color={row.type === 'SALE' ? 'green' : 'orange'}>{row.type}</Tag>
+						<Tag color="blue">PARTIAL PAID</Tag>
+					</Flex>
 				</Space>
 			)),
 		},
@@ -159,7 +182,7 @@ const TransactionList = () => {
 	const [deletingIds, setDeletingIds] = useState([]);
 	const [expandedProduct, setExpandedProduct] = useState(null);
 
-	const { page, limit, search, sort } = useTableUtility();
+	const { page, limit, search, sort, startDate, endDate } = useTableUtility();
 
 	const [isModal, toggleModal] = useToggle();
 	const [modalData, setModalData] = useState(null);
@@ -185,8 +208,9 @@ const TransactionList = () => {
 			type: typeFilter,
 			search: search.value,
 			paid: paidFilter,
+			dates: transformDatesPayload(startDate.value, endDate.value),
 		}),
-		[limit.value, page.value, paidFilter, search.value, sort.value, typeFilter]
+		[endDate.value, limit.value, page.value, paidFilter, search.value, sort.value, startDate.value, typeFilter]
 	);
 
 	const query = useQuery(
@@ -434,6 +458,7 @@ const TransactionList = () => {
 				type: typeFilter,
 				search: search.value,
 				paid: paidFilter,
+				dates: transformDatesPayload(startDate.value, endDate.value),
 			};
 			queryClient.prefetchQuery(['transactions', apiParams], () => get('/transactions', { params: apiParams }));
 		}
@@ -443,96 +468,109 @@ const TransactionList = () => {
 		if (printTransaction && printProducts.length) handlePrint();
 	}, [printTransaction, printProducts.length]);
 
+	const handleChangeDates = ([s, e]) => {
+		startDate.set(s);
+		endDate.set(e);
+	};
+
 	return (
 		<>
-			<Card>
-				<Flex alignItems="center" justifyContent="between" mobileFlex={false}>
-					<Space>
-						<Input placeholder="Search" prefix={<SearchOutlined />} onChange={onSearch} />
-						<Select
-							style={{ width: 200 }}
-							value={typeFilter}
-							optionFilterProp="children"
-							filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-							onChange={setTypeFilter}
-						>
-							{typeFilterOptions.map((option, index) => (
-								<Select.Option value={option.value} key={`transaction-type-filter-select-${index}`}>
-									{option.label}
-								</Select.Option>
-							))}
-						</Select>
-						<Select
-							style={{ width: 120 }}
-							value={paidFilter}
-							optionFilterProp="children"
-							filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-							onChange={setPaidFilter}
-						>
-							{paidFilterOptions.map((option, index) => (
-								<Select.Option value={option.value} key={`transaction-paid-filter-select-${index}`}>
-									{option.label}
-								</Select.Option>
-							))}
-						</Select>
-					</Space>
-					<Space>
-						<Dropdown
-							overlay={
-								<BulkActionDropdownMenu
-									onDelete={handleBulkDelete}
-									canDelete={selectedRowKeys.length && !deleteAllMutation.isLoading}
-									onDeleteAll={handleDeleteAll}
-									canDeleteAll={query.data?.docs.length && !selectedRowKeys.length && !deletingIds.length}
-								/>
+			<AnimatedWrapper>
+				<Card>
+					<Flex alignItems="center" justifyContent="between" mobileFlex={false}>
+						<Space>
+							<Input placeholder="Search" prefix={<SearchOutlined />} onChange={onSearch} />
+							<Select
+								style={{ width: 200 }}
+								value={typeFilter}
+								optionFilterProp="children"
+								filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+								onChange={setTypeFilter}
+							>
+								{typeFilterOptions.map((option, index) => (
+									<Select.Option value={option.value} key={`transaction-type-filter-select-${index}`}>
+										{option.label}
+									</Select.Option>
+								))}
+							</Select>
+							<Select
+								style={{ width: 120 }}
+								value={paidFilter}
+								optionFilterProp="children"
+								filterOption={(input, option) => option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+								onChange={setPaidFilter}
+							>
+								{paidFilterOptions.map((option, index) => (
+									<Select.Option value={option.value} key={`transaction-paid-filter-select-${index}`}>
+										{option.label}
+									</Select.Option>
+								))}
+							</Select>
+							<DatePicker.RangePicker
+								format="D MMM yyyy"
+								value={[startDate.value, endDate.value]}
+								onChange={handleChangeDates}
+							/>
+						</Space>
+						<Space>
+							<Dropdown
+								overlay={
+									<BulkActionDropdownMenu
+										onDelete={handleBulkDelete}
+										canDelete={selectedRowKeys.length && !deleteAllMutation.isLoading}
+										onDeleteAll={handleDeleteAll}
+										canDeleteAll={query.data?.docs.length && !selectedRowKeys.length && !deletingIds.length}
+									/>
+								}
+								trigger={['click']}
+							>
+								<Button type="secondary">
+									Bulk <DownOutlined />
+								</Button>
+							</Dropdown>
+							<Dropdown
+								overlay={
+									<Menu>
+										<Menu.Item onClick={handleAddSale}>
+											<Flex alignItems="center">
+												<span className="ml-2">Sale</span>
+											</Flex>
+										</Menu.Item>
+										<Menu.Item onClick={handleAddPurchase}>
+											<Flex alignItems="center">
+												<span className="ml-2">Purchase</span>
+											</Flex>
+										</Menu.Item>
+									</Menu>
+								}
+								trigger={['click']}
+							>
+								<Button type="primary" icon={<PlusCircleOutlined />} block>
+									Add Transaction
+								</Button>
+							</Dropdown>
+						</Space>
+					</Flex>
+					<When condition={query.isError}>
+						<Result
+							status={500}
+							title="Oops.. We're having trouble fetching transactions!"
+							subTitle={Utils.getErrorMessages(query.error)}
+							extra={
+								<Button type="danger" onClick={query.refetch}>
+									Try again
+								</Button>
 							}
-							trigger={['click']}
-						>
-							<Button type="secondary">
-								Bulk <DownOutlined />
-							</Button>
-						</Dropdown>
-						<Dropdown
-							overlay={
-								<Menu>
-									<Menu.Item onClick={handleAddSale}>
-										<Flex alignItems="center">
-											<span className="ml-2">Sale</span>
-										</Flex>
-									</Menu.Item>
-									<Menu.Item onClick={handleAddPurchase}>
-										<Flex alignItems="center">
-											<span className="ml-2">Purchase</span>
-										</Flex>
-									</Menu.Item>
-								</Menu>
-							}
-							trigger={['click']}
-						>
-							<Button type="primary" icon={<PlusCircleOutlined />} block>
-								Add Transaction
-							</Button>
-						</Dropdown>
-					</Space>
-				</Flex>
-				<When condition={query.isError}>
-					<Result
-						status={500}
-						title="Oops.. We're having trouble fetching transactions!"
-						subTitle={Utils.getErrorMessages(query.error)}
-						extra={
-							<Button type="danger" onClick={query.refetch}>
-								Try again
-							</Button>
-						}
-					/>
-				</When>
-				<When condition={query.isSuccess}>
-					<div className="table-responsive">
-						<Table {...tableProps} />
-					</div>
-				</When>
-			</Card>
+						/>
+					</When>
+					<When condition={query.isSuccess}>
+						<div className="table-responsive">
+							<Table {...tableProps} />
+						</div>
+					</When>
+				</Card>
+			</AnimatedWrapper>
+
 			<PayTransaction visible={{ set: toggleModal, value: isModal }} data={{ set: setModalData, value: modalData }} />
 			<Invoice transaction={printTransaction} products={printProducts} ref={printComponent} />
 		</>

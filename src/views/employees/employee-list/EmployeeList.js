@@ -9,6 +9,7 @@ import {
 	PlusCircleOutlined,
 } from '@ant-design/icons';
 import {
+	AnimatedWrapper,
 	BulkActionDropdownMenu,
 	EllipsisDropdown,
 	Flex,
@@ -256,60 +257,62 @@ const EmployeeList = () => {
 
 	return (
 		<>
-			<Card>
-				<Flex alignItems="center" justifyContent="between" mobileFlex={false}>
-					<Flex className="mb-1" mobileFlex={false}>
-						<When condition={query.isSuccess}>
-							<Input placeholder="Search" prefix={<SearchOutlined />} onChange={onSearch} />
-						</When>
-					</Flex>
-					<Flex>
-						<Space>
-							<Dropdown
-								overlay={
-									<BulkActionDropdownMenu
-										onImportCSV={toggleModal}
-										onDelete={handleBulkDelete}
-										canDelete={selectedRowKeys.length && !deleteAllMutation.isLoading}
-										onDeleteAll={handleDeleteAll}
-										canDeleteAll={query.data?.docs.length && !selectedRowKeys.length && !deletingIds.length}
-									/>
-								}
-								trigger={['click']}
-							>
-								<Button type="secondary">
-									Bulk <DownOutlined />
+			<AnimatedWrapper>
+				<Card>
+					<Flex alignItems="center" justifyContent="between" mobileFlex={false}>
+						<Flex className="mb-1" mobileFlex={false}>
+							<When condition={query.isSuccess}>
+								<Input placeholder="Search" prefix={<SearchOutlined />} onChange={onSearch} />
+							</When>
+						</Flex>
+						<Flex>
+							<Space>
+								<Dropdown
+									overlay={
+										<BulkActionDropdownMenu
+											onImportCSV={toggleModal}
+											onDelete={handleBulkDelete}
+											canDelete={selectedRowKeys.length && !deleteAllMutation.isLoading}
+											onDeleteAll={handleDeleteAll}
+											canDeleteAll={query.data?.docs.length && !selectedRowKeys.length && !deletingIds.length}
+										/>
+									}
+									trigger={['click']}
+								>
+									<Button type="secondary">
+										Bulk <DownOutlined />
+									</Button>
+								</Dropdown>
+								<Button onClick={handleAdd} type="primary" icon={<PlusCircleOutlined />} block>
+									Add Customer
 								</Button>
-							</Dropdown>
-							<Button onClick={handleAdd} type="primary" icon={<PlusCircleOutlined />} block>
-								Add Customer
-							</Button>
-						</Space>
+							</Space>
+						</Flex>
 					</Flex>
-				</Flex>
-				<When condition={query.isError}>
-					<Result
-						status={500}
-						title="Oops.. We're having trouble fetching employees!"
-						subTitle={Utils.getErrorMessages(query.error)}
-						extra={
-							<Button type="danger" onClick={query.refetch}>
-								Try again
-							</Button>
-						}
-					/>
-				</When>
-				<When condition={query.isLoading}>
-					<SpinnerContainer>
-						<Spinner />
-					</SpinnerContainer>
-				</When>
-				<When condition={query.isSuccess}>
-					<div className="table-responsive">
-						<Table {...tableProps} />
-					</div>
-				</When>
-			</Card>
+					<When condition={query.isError}>
+						<Result
+							status={500}
+							title="Oops.. We're having trouble fetching employees!"
+							subTitle={Utils.getErrorMessages(query.error)}
+							extra={
+								<Button type="danger" onClick={query.refetch}>
+									Try again
+								</Button>
+							}
+						/>
+					</When>
+					<When condition={query.isLoading}>
+						<SpinnerContainer>
+							<Spinner />
+						</SpinnerContainer>
+					</When>
+					<When condition={query.isSuccess}>
+						<div className="table-responsive">
+							<Table {...tableProps} />
+						</div>
+					</When>
+				</Card>
+			</AnimatedWrapper>
 			<BulkImport visible={{ set: toggleModal, value: isModal }} />
 		</>
 	);
