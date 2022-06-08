@@ -8,11 +8,12 @@ const wrapperVariants = {
 };
 
 const AnimatedWrapper = ({ children }) => {
-	return (
-		<motion.div variants={wrapperVariants} initial="initial" animate="animate" exit="exit">
-			{children}
-		</motion.div>
-	);
+	return <div>{children}</div>;
+	// return (
+	// 	<motion.div variants={wrapperVariants} initial="initial" animate="animate" exit="exit">
+	// 		{children}
+	// 	</motion.div>
+	// );
 };
 
 export default AnimatedWrapper;
